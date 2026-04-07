@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+
+{% block title %}Search Results — CampusConnect{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="d-flex align-items-center gap-3 mb-4">
+    <h3 class="fw-bold mb-0">Search Results</h3>
+    {% if query %}<span class="text-muted">for "<strong>{{ query }}</strong>"</span>{% endif %}
+  </div>
+
+  {% if query %}
+  <!-- People -->
+  {% if results.people %}
+  <div class="cc-card p-3 mb-4">
+    <h5 class="fw-semibold mb-3"><i class="bi bi-people me-2 text-primary"></i>People</h5>
+    <div class="row g-3">
+      {% for p in results.people %}
+      <div class="col-md-6 col-lg-4">
+        <div class="d-flex gap-3 align-items-center p-3 rounded border border-secondary">
+          <div class="avatar-placeholder-sm">{{ p.first_name|first|upper|default:p.username|first|upper }}</div>
+          <div>
+            <div class="fw-semibold small">{{ p.get_full_name|default:p.username }}</div>
+            <div class="text-muted small">{{ p.get_user_type_display }} · {{ p.get_branch_display|default:"—" }}</div>
+          </div>
+          <a href="{% url 'accounts:profile' p.pk %}" class="btn btn-xs btn-outline-primary ms-auto">View</a>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Placements -->
+  {% if results.placements %}
+  <div class="cc-card p-3 mb-4">
+    <h5 class="fw-semibold mb-3"><i class="bi bi-briefcase me-2 text-success"></i>Placement Opportunities</h5>
+    {% for p in results.placements %}
+    <div class="placement-feed-item">
+      <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <div>
+          <strong>{{ p.company_name }}</strong> — {{ p.role }}
+          <span class="badge cc-badge-role-{{ p.role_type }} ms-2">{{ p.get_role_type_display }}</span>
+        </div>
+        <a href="{% url 'placements:detail' p.pk %}" class="btn btn-sm btn-outline-success">View</a>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <!-- Alumni Posts -->
+  {% if results.alumni_posts %}
+  <div class="cc-card p-3 mb-4">
+    <h5 class="fw-semibold mb-3"><i class="bi bi-newspaper me-2 text-warning"></i>Alumni Posts</h5>
+    {% for p in results.alumni_posts %}
+    <div class="alumni-post-feed-item">
+      <div class="d-flex justify-content-between align-items-start">
+        <div>
+          <h6 class="mb-1"><a href="{% url 'alumni:post_detail' p.pk %}" class="text-decoration-none">{{ p.title }}</a></h6>
+          <p class="text-muted small mb-0">{{ p.content|truncatechars:100 }}</p>
+        </div>
+        <span class="badge post-type-badge-{{ p.post_type }} ms-2">{{ p.get_post_type_display }}</span>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  {% if not results.people and not results.placements and not results.alumni_posts %}
+  <div class="text-center py-5">
+    <i class="bi bi-search fs-1 text-muted d-block mb-3 opacity-25"></i>
+    <h5 class="text-muted">No results found</h5>
+    <p class="text-muted small">Try a different search term</p>
+  </div>
+  {% endif %}
+
+  {% else %}
+  <div class="text-center py-5">
+    <i class="bi bi-search fs-1 text-muted d-block mb-3 opacity-25"></i>
+    <p class="text-muted">Enter a search term in the navbar to find placements, alumni, and posts.</p>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

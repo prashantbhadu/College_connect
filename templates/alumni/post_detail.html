@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}{{ post.title }} — Alumni Insights{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+      <!-- Back button -->
+      <a href="{% url 'alumni:post_list' %}" class="btn btn-sm btn-outline-secondary mb-4">
+        <i class="bi bi-arrow-left me-1"></i>Back to Insights
+      </a>
+
+      <!-- Post Content -->
+      <div class="cc-card p-4 p-md-5 mb-4">
+        <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-4">
+          <span class="post-type-badge-{{ post.post_type }}">{{ post.get_post_type_display }}</span>
+          <small class="text-muted">{{ post.created_at|date:"F j, Y" }}</small>
+        </div>
+
+        <h1 class="fw-bold mb-4">{{ post.title }}</h1>
+        
+        <!-- Author Profile Snippet -->
+        <div class="d-flex gap-3 align-items-center mb-5 p-3 rounded" style="background: rgba(255,255,255,0.03);">
+          {% if post.author.profile_pic %}
+            <img src="{{ post.author.profile_pic.url }}" class="avatar-md rounded-circle" alt="{{ post.author.username }}">
+          {% else %}
+            <div class="avatar-placeholder-md">{{ post.author.first_name|first|upper|default:"A" }}</div>
+          {% endif %}
+          <div class="flex-grow-1">
+            <h6 class="fw-semibold mb-0"><a href="{% url 'accounts:profile' post.author.pk %}" class="text-decoration-none text-light">{{ post.author.get_full_name|default:post.author.username }}</a></h6>
+            <div class="text-muted small">{{ post.author.current_company|default:"Alumni" }} {% if post.author.current_role %}· {{ post.author.current_role }}{% endif %}</div>
+          </div>
+          {% if user.is_authenticated and not user.is_alumni %}
+          <a href="{% url 'alumni:ask_query' post.author.pk %}" class="btn btn-sm btn-outline-info">Ask a Question</a>
+          {% endif %}
+        </div>
+
+        <!-- Body -->
+        <div class="post-body fs-5 text-light" style="line-height: 1.8; white-space: pre-line;">
+          {{ post.content }}
+        </div>
+
+        {% if post.get_tags_list %}
+        <div class="d-flex flex-wrap gap-2 mt-5">
+          {% for tag in post.get_tags_list %}
+          <span class="badge skill-badge fs-6">#{{ tag }}</span>
+          {% endfor %}
+        </div>
+        {% endif %}
+
+        <hr class="border-secondary my-4">
+
+        <!-- Likes -->
+        <div class="d-flex justify-content-between align-items-center">
+          <div class="d-flex align-items-center gap-2">
+            {% if user.is_authenticated %}
+            <form method="post" action="{% url 'alumni:like_post' post.pk %}">
+              {% csrf_token %}
+              <button type="submit" class="btn {% if user in post.likes.all %}btn-danger{% else %}btn-outline-danger{% endif %} rounded-circle p-2 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                <i class="bi {% if user in post.likes.all %}bi-heart-fill{% else %}bi-heart{% endif %}"></i>
+              </button>
+            </form>
+            {% else %}
+            <div class="btn btn-outline-secondary rounded-circle p-2 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;" title="Login to like">
+              <i class="bi bi-heart"></i>
+            </div>
+            {% endif %}
+            <span class="fw-semibold fs-5">{{ post.likes.count }}</span>
+          </div>
+          
+          <div class="d-flex gap-2">
+             <button class="btn btn-outline-secondary btn-sm" onclick="navigator.clipboard.writeText(window.location.href); alert('Link copied!')">
+               <i class="bi bi-share me-1"></i>Share
+             </button>
+             {% if user == post.author %}
+             {% comment %}
+             <a href="{% url 'alumni:post_update' post.pk %}" class="btn btn-outline-warning btn-sm"><i class="bi bi-pencil me-1"></i>Edit</a>
+             {% endcomment %}
+             {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

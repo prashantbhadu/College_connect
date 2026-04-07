@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+
+{% block title %}Manage Mentorship — CampusConnect{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="mb-4">
+    <h2 class="fw-bold mb-1">Incoming Mentorship Requests</h2>
+    <p class="text-muted">Review and respond to students seeking your guidance.</p>
+  </div>
+
+  <div class="row g-4">
+    {% for req in requests %}
+    <div class="col-md-6 col-lg-4">
+      <div class="cc-card h-100">
+        <div class="card-body p-4">
+          <div class="d-flex align-items-center gap-3 mb-3">
+            <div class="avatar-placeholder-md">{{ req.from_user.first_name|first|upper }}</div>
+            <div>
+              <h6 class="fw-bold mb-0">{{ req.from_user.get_full_name }}</h6>
+              <small class="text-muted">{{ req.from_user.get_branch_display }} · Sem {{ req.from_user.semester }}</small>
+            </div>
+          </div>
+          <p class="small text-muted mb-3">{{ req.message|truncatechars:150 }}</p>
+          
+          {% if req.status == 'pending' %}
+          <div class="bg-light p-3 rounded mb-3">
+            <form method="post" action="{% url 'alumni:respond_mentorship' req.pk %}">
+              {% csrf_token %}
+              <textarea name="response_message" class="form-control form-control-sm mb-2" placeholder="Your response (optional)..." rows="2"></textarea>
+              <div class="d-flex gap-2">
+                <button type="submit" name="action" value="accepted" class="btn btn-success btn-sm flex-grow-1">Accept</button>
+                <button type="submit" name="action" value="declined" class="btn btn-outline-danger btn-sm flex-grow-1">Decline</button>
+              </div>
+            </form>
+          </div>
+          {% else %}
+          <div class="mt-3">
+            <span class="badge {% if req.status == 'accepted' %}bg-success{% else %}bg-danger{% endif %} mb-2">
+              {{ req.status|title }}
+            </span>
+            {% if req.response_message %}
+            <p class="small text-muted border-top pt-2">{{ req.response_message }}</p>
+            {% endif %}
+          </div>
+          {% endif %}
+          
+          <div class="text-end">
+            <small class="text-muted" style="font-size: 0.7rem;">Received on {{ req.created_at|date:"M d, Y" }}</small>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% empty %}
+    <div class="col-12 text-center py-5">
+      <i class="bi bi-emoji-smile fs-1 text-muted opacity-25 mb-3 d-block"></i>
+      <h5 class="text-muted">No mentorship requests yet.</h5>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

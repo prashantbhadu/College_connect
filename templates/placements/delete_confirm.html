@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+
+{% block title %}Delete Opportunity — {{ post.company_name }}{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="cc-card p-4 text-center">
+                <i class="bi bi-exclamation-octagon text-danger fs-1 mb-4"></i>
+                <h3 class="fw-bold mb-3">Delete Opportunity?</h3>
+                <p class="text-muted mb-4">Are you sure you want to delete the placement opportunity for <strong>{{ post.company_name }} - {{ post.role }}</strong>? This action cannot be undone.</p>
+                
+                <form method="post" class="d-flex gap-3 justify-content-center">
+                    {% csrf_token %}
+                    <a href="{% url 'placements:detail' post.pk %}" class="btn btn-outline-secondary">Cancel</a>
+                    <button type="submit" class="btn btn-danger">Yes, Delete Permanently</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

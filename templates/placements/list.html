@@ -1,0 +1,128 @@
+{% extends 'base.html' %}
+
+{% block title %}Placements — CampusConnect{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <!-- Page header -->
+  <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+    <div>
+      <h2 class="fw-bold mb-1"><i class="bi bi-briefcase-fill me-2 text-primary"></i>Placement Opportunities</h2>
+      <p class="text-muted mb-0">{{ posts.count }} opportunity{{ posts.count|pluralize }} available</p>
+    </div>
+    <div class="d-flex gap-2 flex-wrap">
+      <a href="{% url 'placements:calendar' %}" class="btn btn-outline-secondary btn-sm">
+        <i class="bi bi-calendar3 me-1"></i>Calendar
+      </a>
+      {% if user.is_staff %}
+      <a href="{% url 'placements:create' %}" class="btn btn-primary btn-sm">
+        <i class="bi bi-plus-circle me-1"></i>Post Opportunity
+      </a>
+      {% endif %}
+    </div>
+  </div>
+
+  {% if is_cgpa_missing %}
+  <div class="alert alert-warning border-0 shadow-sm d-flex align-items-center mb-4" style="background: rgba(245,158,11,0.1)">
+    <i class="bi bi-exclamation-triangle-fill fs-4 me-3 text-warning"></i>
+    <div>
+      <h6 class="alert-heading fw-bold mb-1">Your CGPA is missing</h6>
+      <p class="mb-0 small">Your CGPA is missing. Please <a href="{% url 'accounts:profile_edit' %}" class="fw-bold">update your profile</a> to view eligible placement opportunities.</p>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Filters -->
+  <div class="cc-card p-3 mb-4">
+    <form method="get" class="row g-2 align-items-end">
+      <div class="col-md-4">
+        <label class="form-label small fw-semibold">Search</label>
+        <input type="text" name="q" class="form-control form-control-sm" placeholder="Company or role..." value="{{ search|default:'' }}" />
+      </div>
+      <div class="col-md-3">
+        <label class="form-label small fw-semibold">Type</label>
+        <select name="role_type" class="form-select form-select-sm">
+          <option value="">All Types</option>
+          <option value="fulltime" {% if role_type == 'fulltime' %}selected{% endif %}>Full Time</option>
+          <option value="internship" {% if role_type == 'internship' %}selected{% endif %}>Internship</option>
+          <option value="parttime" {% if role_type == 'parttime' %}selected{% endif %}>Part Time</option>
+        </select>
+      </div>
+      <div class="col-md-2">
+        <button type="submit" class="btn btn-primary btn-sm w-100"><i class="bi bi-funnel me-1"></i>Filter</button>
+      </div>
+      <div class="col-md-2">
+        <a href="{% url 'placements:list' %}" class="btn btn-outline-secondary btn-sm w-100">Clear</a>
+      </div>
+    </form>
+  </div>
+
+  <!-- Placement Cards -->
+  <div class="row g-4">
+    {% for post in posts %}
+    <div class="col-md-6 col-lg-4">
+      <div class="cc-card placement-card h-100">
+        <div class="card-body p-4">
+          <div class="d-flex justify-content-between align-items-start mb-3">
+            <div class="company-avatar-sm">
+              {% if post.company_logo %}
+                <img src="{{ post.company_logo.url }}" alt="{{ post.company_name }}" width="42" height="42">
+              {% else %}
+                {{ post.company_name|first|upper }}
+              {% endif %}
+            </div>
+            <div class="d-flex flex-wrap gap-1">
+              <span class="badge cc-badge-role-{{ post.role_type }}">{{ post.get_role_type_display }}</span>
+              {% if post.pk in applied_ids %}<span class="badge bg-success"><i class="bi bi-check me-1"></i>Applied</span>{% endif %}
+            </div>
+          </div>
+          <h5 class="fw-bold mb-1">{{ post.company_name }}</h5>
+          <p class="text-muted mb-1">{{ post.role }}</p>
+          {% if post.min_cgpa > 0 %}
+          <div class="mb-3">
+            <span class="badge bg-light text-dark border border-secondary small">
+              <i class="bi bi-star-fill text-warning me-1"></i>Min CGPA: {{ post.min_cgpa }}
+            </span>
+          </div>
+          {% else %}
+          <div class="mb-3"></div>
+          {% endif %}
+          <div class="row g-2 mb-3">
+            {% if post.ctc %}
+            <div class="col-6">
+              <div class="info-chip"><i class="bi bi-cash text-success me-1"></i>{{ post.ctc }}</div>
+            </div>
+            {% endif %}
+            <div class="col-6">
+              <div class="info-chip
+                {% if post.deadline >= today %}text-warning{% else %}text-danger{% endif %}">
+                <i class="bi bi-calendar-x me-1"></i>{{ post.deadline|date:"M j, Y" }}
+              </div>
+            </div>
+          </div>
+          <p class="text-muted small mb-3">{{ post.description|truncatechars:80 }}</p>
+          <div class="d-flex gap-2 mt-auto">
+            <a href="{% url 'placements:detail' post.pk %}" class="btn btn-primary btn-sm flex-grow-1">View Details</a>
+            {% if user.is_authenticated and post.pk not in applied_ids %}
+            <form method="post" action="{% url 'placements:apply' post.pk %}">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-outline-success btn-sm">Apply</button>
+            </form>
+            {% endif %}
+          </div>
+        </div>
+        <div class="card-footer bg-transparent border-top border-secondary px-4 py-2">
+          <small class="text-muted"><i class="bi bi-person me-1"></i>{{ post.posted_by.get_full_name|default:post.posted_by.username }}</small>
+        </div>
+      </div>
+    </div>
+    {% empty %}
+    <div class="col-12 text-center py-5">
+      <i class="bi bi-briefcase fs-1 text-muted d-block mb-3 opacity-25"></i>
+      <h5 class="text-muted">No placements found</h5>
+      <p class="text-muted">Try adjusting your filters {% if user.is_staff %}or <a href="{% url 'placements:create' %}">post one yourself</a>{% endif %}.</p>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

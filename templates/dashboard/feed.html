@@ -1,0 +1,186 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard — CampusConnect{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="row g-4">
+
+    <!-- MAIN FEED -->
+    <div class="col-lg-8">
+      <!-- Recent Placements -->
+      <div class="cc-card mb-4">
+        <div class="cc-card-header">
+          <h5 class="mb-0 fw-semibold"><i class="bi bi-briefcase-fill me-2 text-primary"></i>Latest Opportunities</h5>
+          <a href="{% url 'placements:list' %}" class="btn btn-sm btn-outline-primary">View All</a>
+        </div>
+        <div class="card-body p-0">
+          {% for post in recent_placements %}
+          <div class="placement-feed-item">
+            <div class="d-flex align-items-start gap-3">
+              <div class="company-avatar">
+                {% if post.company_logo %}
+                  <img src="{{ post.company_logo.url }}" alt="{{ post.company_name }}" width="44" height="44">
+                {% else %}
+                  {{ post.company_name|first|upper }}
+                {% endif %}
+              </div>
+              <div class="flex-grow-1">
+                <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
+                  <div>
+                    <h6 class="mb-1 fw-semibold">{{ post.company_name }} <span class="text-muted fw-normal">— {{ post.role }}</span></h6>
+                    <div class="d-flex flex-wrap gap-2">
+                      <span class="badge cc-badge-role-{{ post.role_type }}">{{ post.get_role_type_display }}</span>
+                      {% if post.ctc %}<span class="badge bg-success-subtle text-success"><i class="bi bi-cash me-1"></i>{{ post.ctc }}</span>{% endif %}
+                    </div>
+                  </div>
+                  <div class="text-end">
+                    <div class="{% if post.deadline >= today %}text-warning{% else %}text-danger{% endif %} small">
+                      <i class="bi bi-calendar-x me-1"></i>{{ post.deadline|date:"M j" }}
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <a href="{% url 'placements:detail' post.pk %}" class="btn btn-sm btn-outline-primary flex-shrink-0">
+                Details
+              </a>
+            </div>
+          </div>
+          {% empty %}
+          <div class="p-4 text-center text-muted">
+            <i class="bi bi-briefcase fs-1 d-block mb-2 opacity-25"></i>
+            No placements yet. <a href="{% url 'placements:create' %}">Post one!</a>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- Alumni Posts -->
+      <div class="cc-card mb-4">
+        <div class="cc-card-header">
+          <h5 class="mb-0 fw-semibold"><i class="bi bi-stars me-2 text-warning"></i>Alumni Insights</h5>
+          <a href="{% url 'alumni:post_list' %}" class="btn btn-sm btn-outline-warning">See All</a>
+        </div>
+        <div class="card-body p-0">
+          {% for post in recent_alumni_posts %}
+          <div class="alumni-post-feed-item">
+            <div class="d-flex gap-3 align-items-start">
+              <div class="alumni-avatar">{{ post.author.first_name|first|upper|default:post.author.username|first|upper }}</div>
+              <div class="flex-grow-1">
+                <div class="d-flex justify-content-between align-items-start">
+                  <div>
+                    <div class="fw-semibold">{{ post.author.get_full_name|default:post.author.username }}</div>
+                    <div class="text-muted small mb-1">{{ post.author.current_company }} {% if post.author.current_role %}· {{ post.author.current_role }}{% endif %}</div>
+                  </div>
+                  <span class="badge post-type-badge-{{ post.post_type }} ms-2">{{ post.get_post_type_display }}</span>
+                </div>
+                <h6 class="mb-1">{{ post.title }}</h6>
+                <p class="text-muted small mb-0">{{ post.content|truncatechars:120 }}</p>
+              </div>
+            </div>
+            <div class="text-end mt-2">
+              <a href="{% url 'alumni:post_detail' post.pk %}" class="btn btn-sm btn-link text-decoration-none">Read more →</a>
+            </div>
+          </div>
+          {% empty %}
+          <div class="p-4 text-center text-muted">
+            <i class="bi bi-newspaper fs-1 d-block mb-2 opacity-25"></i>
+            No alumni posts yet.
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <!-- SIDEBAR -->
+    <div class="col-lg-4">
+      {% if user.is_authenticated %}
+      <!-- Profile Card -->
+      <div class="cc-card mb-4">
+        <div class="card-body text-center p-4">
+          {% if user.profile_pic %}
+            <img src="{{ user.profile_pic.url }}" class="avatar-lg rounded-circle mb-3" alt="{{ user.username }}" />
+          {% else %}
+            <div class="avatar-placeholder-lg mx-auto mb-3">{{ user.first_name|first|upper|default:"U" }}</div>
+          {% endif %}
+          <h6 class="fw-bold mb-1">{{ user.get_full_name|default:user.username }}</h6>
+          <p class="text-muted small mb-2">{{ user.get_branch_display|default:"—" }}{% if user.is_student %} · Sem {{ user.semester|default:"?" }}{% elif user.is_alumni %} · {{ user.graduation_year|default:"Alumni" }}{% endif %}</p>
+          {% if not user.profile_completed %}
+          <div class="alert alert-warning small p-2 mb-3">
+            <i class="bi bi-exclamation-triangle me-1"></i>Complete your profile!
+          </div>
+          {% endif %}
+          <a href="{% url 'accounts:my_profile' %}" class="btn btn-outline-primary btn-sm w-100">View Profile</a>
+        </div>
+      </div>
+      {% else %}
+      <div class="cc-card mb-4 text-center p-4">
+        <i class="bi bi-person-circle fs-1 text-primary mb-3 d-block"></i>
+        <h6 class="fw-bold">Join CampusConnect</h6>
+        <p class="text-muted small">Sign up to access placements, alumni network, and AI resume analysis.</p>
+        <a href="{% url 'accounts:register_student' %}" class="btn btn-primary w-100 mb-2">Join as Student</a>
+        <a href="{% url 'accounts:register_alumni' %}" class="btn btn-outline-secondary w-100">Join as Alumni</a>
+      </div>
+      {% endif %}
+
+      <!-- Upcoming Deadlines -->
+      <div class="cc-card mb-4">
+        <div class="cc-card-header">
+          <h6 class="mb-0 fw-semibold"><i class="bi bi-alarm-fill me-2 text-danger"></i>Upcoming Deadlines</h6>
+        </div>
+        <div class="card-body p-0">
+          {% for drive in upcoming %}
+          <div class="deadline-item">
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <div class="fw-semibold small">{{ drive.company_name }}</div>
+                <div class="text-muted" style="font-size: 0.75rem">{{ drive.role }}</div>
+              </div>
+              <div class="deadline-badge" data-deadline="{{ drive.deadline|date:'Y-m-d' }}">
+                {{ drive.deadline|date:"M j" }}
+              </div>
+            </div>
+          </div>
+          {% empty %}
+          <div class="p-3 text-center text-muted small">No upcoming drives</div>
+          {% endfor %}
+          <div class="p-2 text-center">
+            <a href="{% url 'placements:calendar' %}" class="btn btn-sm btn-link text-decoration-none">View Calendar →</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Actions -->
+      <div class="cc-card">
+        <div class="cc-card-header">
+          <h6 class="mb-0 fw-semibold"><i class="bi bi-lightning-fill me-2 text-warning"></i>Quick Actions</h6>
+        </div>
+        <div class="card-body">
+          <div class="d-grid gap-2">
+            {% if user.is_authenticated %}
+            <a href="{% url 'resume_analyzer:upload' %}" class="btn btn-gradient-primary btn-sm">
+              <i class="bi bi-robot me-2"></i>Analyze My Resume
+            </a>
+            {% if user.is_alumni %}
+            <a href="{% url 'alumni:post_create' %}" class="btn btn-outline-secondary btn-sm">
+              <i class="bi bi-pencil-square me-2"></i>Share Insight
+            </a>
+            <a href="{% url 'placements:create' %}" class="btn btn-outline-secondary btn-sm">
+              <i class="bi bi-plus-circle me-2"></i>Post Opportunity
+            </a>
+            {% else %}
+            <a href="{% url 'alumni:directory' %}" class="btn btn-outline-secondary btn-sm">
+              <i class="bi bi-people me-2"></i>Find a Mentor
+            </a>
+            <a href="{% url 'placements:my_applications' %}" class="btn btn-outline-secondary btn-sm">
+              <i class="bi bi-file-earmark-check me-2"></i>My Applications
+            </a>
+            {% endif %}
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

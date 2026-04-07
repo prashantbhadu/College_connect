@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Join as Student — CampusConnect{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-md-7 col-lg-6">
+      <div class="cc-card p-4">
+        <div class="text-center mb-4">
+          <div class="auth-icon mx-auto mb-3"><i class="bi bi-person-plus-fill fs-1"></i></div>
+          <h2 class="fw-bold">Student Registration</h2>
+          <p class="text-muted">Create your CampusConnect account</p>
+        </div>
+        <form method="post" novalidate>
+          {% csrf_token %}
+          {% crispy form %}
+          <button type="submit" class="btn btn-primary w-100 btn-lg mt-3">
+            <i class="bi bi-check-circle me-2"></i>Create Account
+          </button>
+        </form>
+        <div class="text-center mt-3">
+          <span class="text-muted">Already have an account?</span>
+          <a href="{% url 'accounts:login' %}" class="ms-1 fw-semibold">Login</a>
+        </div>
+        <div class="divider-text my-3">or</div>
+        <div class="text-center">
+          <a href="{% url 'accounts:register_alumni' %}" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-award me-2"></i>Register as Alumni
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Edit Profile — CampusConnect{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+      <div class="cc-card p-4">
+        <div class="d-flex align-items-center gap-3 mb-4">
+          <div class="auth-icon"><i class="bi bi-pencil-square fs-3"></i></div>
+          <div>
+            <h3 class="fw-bold mb-0">Edit Profile</h3>
+            <p class="text-muted mb-0">Keep your profile up to date</p>
+          </div>
+        </div>
+        <form method="post" enctype="multipart/form-data" novalidate>
+          {% csrf_token %}
+
+          <div class="row g-3">
+            <div class="col-md-6">{{ form.first_name|as_crispy_field }}</div>
+            <div class="col-md-6">{{ form.last_name|as_crispy_field }}</div>
+          </div>
+          {{ form.bio|as_crispy_field }}
+          <div class="row g-3">
+            <div class="col-md-6">{{ form.branch|as_crispy_field }}</div>
+            {% if request.user.is_student %}
+            <div class="col-md-6">{{ form.semester|as_crispy_field }}</div>
+            {% else %}
+            <div class="col-md-6">{{ form.graduation_year|as_crispy_field }}</div>
+            {% endif %}
+          </div>
+          {% if request.user.is_alumni %}
+          <div class="row g-3">
+            <div class="col-md-6">{{ form.current_company|as_crispy_field }}</div>
+            <div class="col-md-6">{{ form.current_role|as_crispy_field }}</div>
+          </div>
+          {% endif %}
+
+          {{ form.skills_input|as_crispy_field }}
+
+          <hr class="border-secondary my-3" />
+          <h6 class="fw-semibold mb-3"><i class="bi bi-link-45deg me-2 text-primary"></i>Social Links</h6>
+          <div class="row g-3">
+            <div class="col-md-4">{{ form.github_url|as_crispy_field }}</div>
+            <div class="col-md-4">{{ form.linkedin_url|as_crispy_field }}</div>
+            <div class="col-md-4">{{ form.portfolio_url|as_crispy_field }}</div>
+          </div>
+
+          <hr class="border-secondary my-3" />
+          <h6 class="fw-semibold mb-3"><i class="bi bi-file-earmark-person me-2 text-success"></i>Profile Media</h6>
+          <div class="row g-3">
+            <div class="col-md-6">{{ form.profile_pic|as_crispy_field }}</div>
+            <div class="col-md-6">{{ form.resume|as_crispy_field }}</div>
+          </div>
+
+          <div class="d-flex gap-3 mt-4">
+            <button type="submit" class="btn btn-primary btn-lg px-4">
+              <i class="bi bi-check-circle me-2"></i>Save Changes
+            </button>
+            <a href="{% url 'accounts:my_profile' %}" class="btn btn-outline-secondary btn-lg">Cancel</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

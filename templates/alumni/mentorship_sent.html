@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+
+{% block title %}My Mentorship Requests — CampusConnect{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="mb-4">
+    <h2 class="fw-bold mb-1">My Mentorship Requests</h2>
+    <p class="text-muted">Track the status of your requests to alumni.</p>
+  </div>
+
+  <div class="row g-4">
+    {% for req in requests %}
+    <div class="col-md-6">
+      <div class="cc-card h-100">
+        <div class="card-body p-4">
+          <div class="d-flex align-items-center gap-3 mb-3">
+            {% if req.to_alumni.profile_pic %}
+              <img src="{{ req.to_alumni.profile_pic.url }}" class="avatar-sm rounded-circle" alt="{{ req.to_alumni.username }}" />
+            {% else %}
+              <div class="avatar-placeholder-sm">{{ req.to_alumni.first_name|first|upper }}</div>
+            {% endif %}
+            <div>
+              <h6 class="fw-bold mb-0">{{ req.to_alumni.get_full_name }}</h6>
+              <small class="text-muted">{{ req.to_alumni.current_company|default:"Alumni" }}</small>
+            </div>
+            <div class="ms-auto shadow-sm badge {% if req.status == 'pending' %}bg-info{% elif req.status == 'accepted' %}bg-success{% else %}bg-danger{% endif %}">
+              {{ req.status|title }}
+            </div>
+          </div>
+          
+          <div class="mb-3">
+            <label class="small fw-bold text-muted d-block mb-1">Your Message:</label>
+            <p class="small bg-light p-2 rounded">{{ req.message }}</p>
+          </div>
+
+          {% if req.status != 'pending' and req.response_message %}
+          <div>
+            <label class="small fw-bold text-muted d-block mb-1">Response from {{ req.to_alumni.first_name }}:</label>
+            <p class="small border-start border-3 border-warning ps-2">{{ req.response_message }}</p>
+          </div>
+          {% endif %}
+          
+          <div class="text-end mt-2">
+            <small class="text-muted" style="font-size: 0.7rem;">Sent on {{ req.created_at|date:"M d, Y" }}</small>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% empty %}
+    <div class="col-12 text-center py-5">
+      <i class="bi bi-send-dash fs-1 text-muted opacity-25 mb-3 d-block"></i>
+      <h5 class="text-muted">You haven't sent any mentorship requests yet.</h5>
+      <a href="{% url 'alumni:directory' %}" class="btn btn-warning btn-sm mt-2 text-dark">Find Alumni</a>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

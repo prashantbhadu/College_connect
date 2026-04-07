@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Complete Your Profile — CampusConnect{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-md-8 col-lg-7">
+      <div class="cc-card p-4">
+        <div class="text-center mb-4">
+          <div class="auth-icon mx-auto mb-3"><i class="bi bi-person-lines-fill fs-1"></i></div>
+          <h2 class="fw-bold">Complete Your Profile</h2>
+          <p class="text-muted">Tell us a bit more about yourself to get started</p>
+        </div>
+        
+        <div class="progress mb-4" style="height: 8px; background: rgba(255,255,255,0.1)">
+          <div class="progress-bar bg-primary" role="progressbar" style="width: 50%" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100"></div>
+        </div>
+
+        <form method="post" enctype="multipart/form-data" novalidate>
+          {% csrf_token %}
+          
+          <div class="row g-3">
+            <div class="col-md-6">{{ form.branch|as_crispy_field }}</div>
+            {% if request.user.is_student %}
+            <div class="col-md-6">{{ form.semester|as_crispy_field }}</div>
+            {% else %}
+            <div class="col-md-6">{{ form.graduation_year|as_crispy_field }}</div>
+            {% endif %}
+          </div>
+          
+          {{ form.bio|as_crispy_field }}
+          {{ form.skills_input|as_crispy_field }}
+          
+          {% if request.user.is_alumni %}
+          <div class="row g-3">
+            <div class="col-md-6">{{ form.current_company|as_crispy_field }}</div>
+            <div class="col-md-6">{{ form.current_role|as_crispy_field }}</div>
+          </div>
+          {% endif %}
+          
+          <h6 class="fw-semibold mt-4 mb-3"><i class="bi bi-link-45deg me-2 text-primary"></i>Social Profiles (Optional)</h6>
+          <div class="row g-3">
+            <div class="col-md-6">{{ form.linkedin_url|as_crispy_field }}</div>
+            <div class="col-md-6">{{ form.github_url|as_crispy_field }}</div>
+          </div>
+          
+          <button type="submit" class="btn btn-primary w-100 btn-lg mt-4">
+            <i class="bi bi-arrow-right-circle me-2"></i>Continue to Dashboard
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

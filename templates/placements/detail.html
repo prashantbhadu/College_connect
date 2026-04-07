@@ -1,0 +1,157 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}{{ post.company_name }} — {{ post.role }} — CampusConnect{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="row g-4">
+    <div class="col-lg-8">
+      <div class="cc-card p-4 mb-4">
+        <div class="d-flex align-items-start gap-4 flex-wrap mb-4">
+          <div class="company-avatar-lg">
+            {% if post.company_logo %}
+              <img src="{{ post.company_logo.url }}" alt="{{ post.company_name }}" width="72" height="72">
+            {% else %}
+              {{ post.company_name|first|upper }}
+            {% endif %}
+          </div>
+          <div class="flex-grow-1">
+            <h2 class="fw-bold mb-1">{{ post.company_name }}</h2>
+            <h4 class="text-muted fw-normal mb-2">{{ post.role }}</h4>
+            <div class="d-flex flex-wrap gap-2">
+              <span class="badge cc-badge-role-{{ post.role_type }} fs-6">{{ post.get_role_type_display }}</span>
+              {% if post.ctc %}<span class="badge bg-success-subtle text-success"><i class="bi bi-cash me-1"></i>{{ post.ctc }}</span>{% endif %}
+              <span class="badge {% if post.deadline >= today %}bg-warning-subtle text-warning{% else %}bg-danger-subtle text-danger{% endif %}">
+                <i class="bi bi-calendar-x me-1"></i>Deadline: {{ post.deadline|date:"F j, Y" }}
+              </span>
+              {% if user.is_authenticated and user.is_student %}
+                {% if is_eligible %}
+                  <span class="badge bg-success"><i class="bi bi-check-circle me-1"></i>Eligible</span>
+                {% else %}
+                  <span class="badge bg-danger"><i class="bi bi-x-circle me-1"></i>Not Eligible</span>
+                {% endif %}
+              {% endif %}
+            </div>
+          </div>
+          {% if applied %}<span class="badge bg-success fs-6"><i class="bi bi-check-circle me-1"></i>Applied</span>{% endif %}
+          {% if user.is_staff or user == post.posted_by %}
+          <div class="d-flex gap-1 ms-auto">
+            <a href="{% url 'placements:edit' post.pk %}" class="btn btn-sm btn-outline-warning" title="Edit Opportunity"><i class="bi bi-pencil"></i></a>
+            <a href="{% url 'placements:delete' post.pk %}" class="btn btn-sm btn-outline-danger" title="Delete Opportunity"><i class="bi bi-trash"></i></a>
+          </div>
+          {% endif %}
+        </div>
+
+        <h5 class="fw-semibold">Job Description</h5>
+        <div class="text-muted mb-4" style="white-space: pre-line">{{ post.description }}</div>
+
+        {% if post.eligibility_criteria %}
+        <h5 class="fw-semibold">Eligibility Criteria</h5>
+        <div class="text-muted mb-4" style="white-space: pre-line">{{ post.eligibility_criteria }}</div>
+        {% endif %}
+
+        <div class="d-flex gap-3 flex-wrap">
+          {% if user.is_authenticated and not applied %}
+            {% if not user.is_student or is_eligible %}
+            <form method="post" action="{% url 'placements:apply' post.pk %}">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-primary btn-lg px-4">
+                <i class="bi bi-send me-2"></i>Apply Now
+              </button>
+            </form>
+            {% else %}
+            <button class="btn btn-secondary btn-lg px-4" disabled title="You do not meet the minimum CGPA requirement">
+              <i class="bi bi-x-circle me-2"></i>Not Eligible
+            </button>
+            {% endif %}
+          {% elif applied %}
+          <button class="btn btn-success btn-lg px-4" disabled>
+            <i class="bi bi-check-circle me-2"></i>Already Applied
+          </button>
+          {% endif %}
+          {% if post.application_link %}
+          <a href="{{ post.application_link }}" target="_blank" class="btn btn-outline-primary btn-lg px-4">
+            <i class="bi bi-box-arrow-up-right me-2"></i>External Link
+          </a>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Discussion Thread -->
+      <div class="cc-card">
+        <div class="cc-card-header">
+          <h5 class="mb-0 fw-semibold"><i class="bi bi-chat-dots me-2 text-info"></i>Discussion Thread</h5>
+          <span class="text-muted small">{{ threads.count }} message{{ threads.count|pluralize }}</span>
+        </div>
+        <div class="card-body p-0">
+          {% for t in threads %}
+          <div class="thread-message">
+            <div class="d-flex gap-3">
+              <div class="avatar-placeholder-sm">{{ t.author.first_name|first|upper|default:"U" }}</div>
+              <div>
+                <div class="fw-semibold small">{{ t.author.get_full_name|default:t.author.username }}
+                  <span class="badge {% if t.author.is_alumni %}bg-warning-subtle text-warning{% else %}bg-primary-subtle text-primary{% endif %} ms-1">{{ t.author.get_user_type_display }}</span>
+                </div>
+                <p class="mb-1">{{ t.message }}</p>
+                <small class="text-muted">{{ t.created_at|date:"M j, Y · g:i A" }}</small>
+              </div>
+            </div>
+          </div>
+          {% empty %}
+          <div class="p-4 text-center text-muted small">No messages yet. Be the first to ask!</div>
+          {% endfor %}
+        </div>
+        {% if user.is_authenticated %}
+        <div class="card-footer border-secondary p-3">
+          <form method="post">
+            {% csrf_token %}
+            {{ thread_form.message }}
+            <button type="submit" class="btn btn-primary btn-sm mt-2">
+              <i class="bi bi-send me-1"></i>Post Message
+            </button>
+          </form>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="col-lg-4">
+      <div class="cc-card p-4 mb-4">
+        <h6 class="fw-semibold mb-3">Quick Info</h6>
+        <div class="info-row"><span class="text-muted">Type</span><span>{{ post.get_role_type_display }}</span></div>
+        {% if post.ctc %}<div class="info-row"><span class="text-muted">CTC / Stipend</span><span class="text-success fw-semibold">{{ post.ctc }}</span></div>{% endif %}
+        <div class="info-row"><span class="text-muted">Deadline</span><span>{{ post.deadline|date:"M j, Y" }}</span></div>
+        <div class="info-row"><span class="text-muted">Posted by</span><span><a href="{% url 'accounts:profile' post.posted_by.pk %}">{{ post.posted_by.get_full_name|default:post.posted_by.username }}</a></span></div>
+        <div class="info-row border-0"><span class="text-muted">Posted on</span><span>{{ post.created_at|date:"M j, Y" }}</span></div>
+      </div>
+      <div class="cc-card p-4">
+        <h6 class="fw-semibold mb-3">Applications</h6>
+        <div class="text-center">
+          <div class="display-4 fw-bold text-primary">{{ post.applications.count }}</div>
+          <div class="text-muted small mb-3">students applied</div>
+        </div>
+        
+        {% if applicants %}
+        <hr class="border-secondary my-3">
+        <h6 class="fw-semibold small mb-2">Applicant List (Admin Only)</h6>
+        <div class="list-group list-group-flush bg-transparent">
+          {% for app in applicants %}
+          <div class="list-group-item bg-transparent border-secondary border-opacity-25 px-0 py-2">
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <a href="{% url 'accounts:profile' app.user.pk %}" class="text-decoration-none small text-light fw-bold">{{ app.user.get_full_name|default:app.user.username }}</a>
+                <div class="text-muted" style="font-size: 0.7rem;">CGPA: {{ app.user.cgpa|default:"N/A" }} · {{ app.user.branch|default:"No Branch" }}</div>
+              </div>
+              <span class="badge bg-secondary-subtle text-secondary x-small" style="font-size: 0.6rem;">{{ app.applied_at|date:"M j" }}</span>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,189 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ profile_user.get_full_name|default:profile_user.username }} — CampusConnect{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="row g-4">
+    <!-- PROFILE CARD -->
+    <div class="col-lg-4">
+      <div class="cc-card p-4 text-center mb-4">
+        {% if profile_user.profile_pic %}
+          <img src="{{ profile_user.profile_pic.url }}" class="avatar-xl rounded-circle mb-3" alt="{{ profile_user.username }}" />
+        {% else %}
+          <div class="avatar-placeholder-xl mx-auto mb-3">{{ profile_user.first_name|first|upper|default:"U" }}</div>
+        {% endif %}
+        <h4 class="fw-bold mb-1">{{ profile_user.get_full_name|default:profile_user.username }}</h4>
+        <div class="badge {% if profile_user.is_alumni %}bg-warning text-dark{% else %}bg-primary{% endif %} mb-2">
+          {{ profile_user.get_user_type_display }}
+        </div>
+        <p class="text-muted mb-3">
+          {{ profile_user.get_branch_display|default:"—" }}
+          {% if profile_user.is_student and profile_user.semester %}· Semester {{ profile_user.semester }}{% endif %}
+          {% if profile_user.is_alumni and profile_user.graduation_year %}· Class of {{ profile_user.graduation_year }}{% endif %}
+        </p>
+        {% if profile_user.is_student and profile_user.cgpa %}
+        <div class="h3 fw-bold text-primary mb-1">{{ profile_user.cgpa }}</div>
+        <div class="text-muted small mb-3">Cumulative CGPA</div>
+        {% endif %}
+        {% if profile_user.bio %}
+        <p class="text-muted small px-2">{{ profile_user.bio }}</p>
+        {% endif %}
+        <!-- Social Links -->
+        <div class="d-flex justify-content-center gap-3 mt-3">
+          {% if profile_user.github_url %}<a href="{{ profile_user.github_url }}" target="_blank" class="social-link"><i class="bi bi-github fs-5"></i></a>{% endif %}
+          {% if profile_user.linkedin_url %}<a href="{{ profile_user.linkedin_url }}" target="_blank" class="social-link text-primary"><i class="bi bi-linkedin fs-5"></i></a>{% endif %}
+          {% if profile_user.portfolio_url %}<a href="{{ profile_user.portfolio_url }}" target="_blank" class="social-link text-success"><i class="bi bi-globe fs-5"></i></a>{% endif %}
+        </div>
+        {% if profile_user.is_alumni and profile_user.current_company %}
+        <div class="mt-3 badge bg-dark border border-secondary">
+          <i class="bi bi-building me-1"></i>{{ profile_user.current_company }}
+          {% if profile_user.current_role %} · {{ profile_user.current_role }}{% endif %}
+        </div>
+        {% endif %}
+        <!-- Action buttons -->
+        {% if request.user == profile_user %}
+        <a href="{% url 'accounts:profile_edit' %}" class="btn btn-outline-primary btn-sm w-100 mt-3">
+          <i class="bi bi-pencil me-2"></i>Edit Profile
+        </a>
+        {% elif profile_user.is_alumni and request.user.is_authenticated %}
+        <a href="{% url 'alumni:mentorship_request' profile_user.pk %}" class="btn btn-outline-warning btn-sm w-100 mt-3">
+          <i class="bi bi-hand-thumbs-up me-2"></i>Request Mentorship
+        </a>
+        <a href="{% url 'alumni:ask_query' profile_user.pk %}" class="btn btn-outline-info btn-sm w-100 mt-2">
+          <i class="bi bi-chat-dots me-2"></i>Ask a Question
+        </a>
+        {% endif %}
+      </div>
+
+      <!-- Skills -->
+      {% if profile_user.skills.exists %}
+      <div class="cc-card p-3">
+        <h6 class="fw-semibold mb-3"><i class="bi bi-tools me-2 text-primary"></i>Skills</h6>
+        <div class="d-flex flex-wrap gap-2">
+          {% for skill in profile_user.skills.all %}
+          <span class="badge skill-badge">{{ skill.name }}</span>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="col-lg-8">
+      {% if profile_user.resume %}
+      <div class="cc-card p-3 mb-4">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <h6 class="fw-semibold mb-0"><i class="bi bi-file-earmark-pdf me-2 text-danger"></i>Resume</h6>
+            <small class="text-muted">Uploaded resume</small>
+          </div>
+          <div class="d-flex gap-2">
+            <a href="{{ profile_user.resume.url }}" class="btn btn-sm btn-outline-danger" target="_blank">
+              <i class="bi bi-download me-1"></i>Download
+            </a>
+            {% if request.user == profile_user %}
+            <a href="{% url 'resume_analyzer:upload' %}" class="btn btn-sm btn-outline-primary">
+              <i class="bi bi-robot me-1"></i>Analyze
+            </a>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- Academic Records (CGPA Table) -->
+      {% if profile_user.is_student %}
+      <div class="cc-card p-4 mb-4">
+        <h6 class="fw-bold mb-3"><i class="bi bi-mortarboard me-2 text-primary"></i>Academic Records</h6>
+        <div class="table-responsive">
+          <table class="table table-dark table-hover mb-0">
+            <thead>
+              <tr>
+                <th>Semester</th>
+                <th>GPA</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for record in profile_user.semester_gpas.all %}
+              <tr>
+                <td>Semester {{ record.semester }}</td>
+                <td class="fw-bold text-warning">{{ record.gpa }}</td>
+                <td><span class="badge bg-success">Passed</span></td>
+              </tr>
+              {% empty %}
+              <tr>
+                <td colspan="3" class="text-center text-muted small py-4">
+                  No semester-wise records found.
+                  {% if request.user == profile_user %}
+                  <br><a href="/admin/accounts/semestergpa/add/" class="btn btn-sm btn-outline-primary mt-2">Add Record</a>
+                  {% endif %}
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% if profile_user.cgpa %}
+        <div class="mt-3 p-2 bg-dark rounded border border-secondary d-flex justify-content-between align-items-center">
+            <span class="small text-muted">Cumulative CGPA</span>
+            <span class="fw-bold text-primary fs-5">{{ profile_user.cgpa }}</span>
+        </div>
+        {% endif %}
+      </div>
+      {% endif %}
+
+      {% if profile_user.is_alumni %}
+      <!-- Alumni Posts -->
+      <div class="cc-card mb-4">
+        <div class="cc-card-header">
+          <h6 class="fw-semibold mb-0"><i class="bi bi-newspaper me-2 text-warning"></i>Posts by {{ profile_user.first_name }}</h6>
+        </div>
+        <div class="card-body p-0">
+          {% for post in profile_user.alumni_posts.all|slice:":5" %}
+          <div class="alumni-post-feed-item">
+            <h6><a href="{% url 'alumni:post_detail' post.pk %}" class="text-decoration-none">{{ post.title }}</a></h6>
+            <p class="text-muted small mb-0">{{ post.content|truncatechars:100 }}</p>
+            <small class="text-muted">{{ post.created_at|date:"M j, Y" }}</small>
+          </div>
+          {% empty %}
+          <div class="p-4 text-muted text-center small">No posts yet.</div>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- Resume Analyses -->
+      {% if request.user == profile_user %}
+      <div class="cc-card">
+        <div class="cc-card-header">
+          <h6 class="fw-semibold mb-0"><i class="bi bi-robot me-2 text-success"></i>Resume Analyses</h6>
+          <a href="{% url 'resume_analyzer:upload' %}" class="btn btn-sm btn-outline-success">Analyze Now</a>
+        </div>
+        <div class="card-body p-0">
+          {% for analysis in profile_user.analyses.all|slice:":3" %}
+          <div class="deadline-item">
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <div class="fw-semibold small">{{ analysis.target_role|default:"General" }}</div>
+                <div class="text-muted" style="font-size:0.75rem">{{ analysis.created_at|date:"M j, Y" }}</div>
+              </div>
+              <div class="d-flex align-items-center gap-2">
+                <span class="fw-bold" style="color: {% if analysis.ats_score >= 80 %}#22c55e{% elif analysis.ats_score >= 60 %}#f59e0b{% else %}#ef4444{% endif %}">
+                  {{ analysis.ats_score }}/100
+                </span>
+                <a href="{% url 'resume_analyzer:result' analysis.pk %}" class="btn btn-sm btn-outline-primary">View</a>
+              </div>
+            </div>
+          </div>
+          {% empty %}
+          <div class="p-4 text-muted text-center small">No analyses yet. Upload your resume!</div>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

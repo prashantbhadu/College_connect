@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Share Insight — CampusConnect{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+      <div class="cc-card p-4">
+        <div class="text-center mb-4">
+          <div class="auth-icon mx-auto mb-3" style="background: rgba(245,158,11,0.15); color: #f59e0b">
+            <i class="bi bi-pencil-square fs-1"></i>
+          </div>
+          <h2 class="fw-bold">Share an Insight</h2>
+          <p class="text-muted">Share your experience, success stories, or career guidance with students.</p>
+        </div>
+
+        <form method="post" class="mt-4">
+          {% csrf_token %}
+          {% crispy form %}
+          <div class="d-flex gap-2 mt-4">
+            <button type="submit" class="btn btn-warning text-dark flex-grow-1">
+              <i class="bi bi-send me-2"></i>Publish Insight
+            </button>
+            <a href="{% url 'alumni:post_list' %}" class="btn btn-outline-secondary">Cancel</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

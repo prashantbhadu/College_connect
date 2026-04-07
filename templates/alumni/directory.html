@@ -1,0 +1,116 @@
+{% extends 'base.html' %}
+
+{% block title %}Alumni Directory — CampusConnect{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+    <div>
+      <h2 class="fw-bold mb-1"><i class="bi bi-people-fill me-2 text-warning"></i>Alumni Network</h2>
+      <p class="text-muted mb-0">{{ alumni.count }} alumni registered</p>
+    </div>
+    <div class="d-flex gap-2">
+      <a href="{% url 'alumni:post_list' %}" class="btn btn-outline-warning btn-sm"><i class="bi bi-newspaper me-1"></i>Insights</a>
+      {% if user.is_authenticated and user.is_alumni %}
+      <a href="{% url 'alumni:post_create' %}" class="btn btn-warning btn-sm text-dark"><i class="bi bi-pencil me-1"></i>Share Insight</a>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="cc-card p-3 mb-4">
+    <form method="get" class="row g-2 align-items-end">
+      <div class="col-md-3">
+        <label class="form-label small fw-semibold">Search</label>
+        <input type="text" name="q" class="form-control form-control-sm" placeholder="Name or company..." value="{{ request.GET.q|default:'' }}" />
+      </div>
+      <div class="col-md-2">
+        <label class="form-label small fw-semibold">Batch / Year</label>
+        <select name="batch" class="form-select form-select-sm">
+          <option value="">All Batches</option>
+          {% for batch in batches %}<option value="{{ batch }}" {% if selected_batch == batch|stringformat:"s" %}selected{% endif %}>{{ batch }}</option>{% endfor %}
+        </select>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label small fw-semibold">Branch</label>
+        <select name="branch" class="form-select form-select-sm">
+          <option value="">All Branches</option>
+          {% for val, label in branch_choices %}<option value="{{ val }}" {% if selected_branch == val %}selected{% endif %}>{{ label }}</option>{% endfor %}
+        </select>
+      </div>
+      <div class="col-md-2">
+        <label class="form-label small fw-semibold">Company</label>
+        <input type="text" name="company" class="form-control form-control-sm" placeholder="Filter by company" value="{{ selected_company|default:'' }}" />
+      </div>
+      <div class="col-md-2 d-flex gap-2">
+        <button type="submit" class="btn btn-warning btn-sm flex-grow-1 text-dark"><i class="bi bi-funnel me-1"></i>Filter</button>
+        <a href="{% url 'alumni:directory' %}" class="btn btn-outline-secondary btn-sm">×</a>
+      </div>
+    </form>
+  </div>
+
+  <div class="row g-4">
+    {% for person in alumni %}
+    <div class="col-md-6 col-lg-4">
+      <div class="cc-card h-100 alumni-card">
+        <div class="card-body p-4">
+          <div class="d-flex gap-3 align-items-center mb-3">
+            {% if person.profile_pic %}
+              <img src="{{ person.profile_pic.url }}" class="avatar-md rounded-circle" alt="{{ person.username }}" />
+            {% else %}
+              <div class="avatar-placeholder-md">{{ person.first_name|first|upper|default:person.username|first|upper }}</div>
+            {% endif %}
+            <div>
+              <h6 class="fw-bold mb-0">{{ person.get_full_name|default:person.username }}</h6>
+              <div class="text-muted small">{{ person.get_branch_display|default:"—" }} · {{ person.graduation_year|default:"Alumni" }}</div>
+            </div>
+          </div>
+          {% if person.current_company %}
+          <div class="d-flex align-items-center justify-content-between mb-2">
+            <div class="d-flex align-items-center gap-2">
+              <i class="bi bi-building text-warning"></i>
+              <span class="small">{{ person.current_company }}{% if person.current_role %} — {{ person.current_role }}{% endif %}</span>
+            </div>
+            {% if person.linkedin_url %}
+            <a href="{{ person.linkedin_url }}" target="_blank" class="text-primary fs-5" title="LinkedIn Profile">
+              <i class="bi bi-linkedin"></i>
+            </a>
+            {% endif %}
+          </div>
+          {% elif person.linkedin_url %}
+          <div class="d-flex justify-content-end mb-2">
+            <a href="{{ person.linkedin_url }}" target="_blank" class="text-primary fs-5" title="LinkedIn Profile">
+              <i class="bi bi-linkedin"></i>
+            </a>
+          </div>
+          {% endif %}
+          {% if person.bio %}
+          <p class="text-muted small mb-3">{{ person.bio|truncatechars:80 }}</p>
+          {% endif %}
+          <!-- Skills -->
+          {% if person.skills.exists %}
+          <div class="d-flex flex-wrap gap-1 mb-3">
+            {% for s in person.skills.all|slice:":4" %}<span class="badge skill-badge">{{ s.name }}</span>{% endfor %}
+            {% if person.skills.count > 4 %}<span class="badge bg-dark text-muted">+{{ person.skills.count|add:"-4" }}</span>{% endif %}
+          </div>
+          {% endif %}
+          <div class="d-flex gap-2 mt-auto">
+            <a href="{% url 'accounts:profile' person.pk %}" class="btn btn-outline-warning btn-sm flex-grow-1">View Profile</a>
+            {% if user.is_authenticated and not user.is_alumni %}
+            <a href="{% url 'alumni:ask_query' person.pk %}" class="btn btn-outline-info btn-sm"><i class="bi bi-chat-dots"></i></a>
+            <a href="{% url 'alumni:mentorship_request' person.pk %}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-hand-thumbs-up"></i></a>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+    {% empty %}
+    <div class="col-12 text-center py-5">
+      <i class="bi bi-people fs-1 text-muted d-block mb-3 opacity-25"></i>
+      <h5 class="text-muted">No alumni found</h5>
+      <a href="{% url 'alumni:directory' %}" class="btn btn-outline-warning btn-sm">Clear Filters</a>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,185 @@
+{% extends 'base.html' %}
+
+{% block title %}Resume Analysis Result — CampusConnect{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+    <div>
+      <h2 class="fw-bold mb-1"><i class="bi bi-robot me-2 text-success"></i>Analysis Results</h2>
+      <p class="text-muted mb-0">
+        {{ analysis.target_role|default:"General Role" }} · {{ analysis.created_at|date:"M j, Y" }}
+      </p>
+    </div>
+    <a href="{% url 'resume_analyzer:upload' %}" class="btn btn-outline-primary btn-sm">
+      <i class="bi bi-arrow-left me-1"></i>Analyze Another
+    </a>
+  </div>
+
+  <div class="row g-4">
+    <!-- ATS SCORE -->
+    <div class="col-lg-4">
+      <div class="cc-card p-4 text-center mb-4">
+        <h5 class="fw-semibold mb-3">ATS Compatibility Score</h5>
+        <div class="ats-gauge-container">
+          <canvas id="atsGauge" width="220" height="220"></canvas>
+          <div class="ats-gauge-label">
+            <div class="ats-score-num" style="color: {{ ats_color }}">{{ ats_score }}</div>
+            <div class="ats-score-denom">/100</div>
+            <div class="ats-score-label" style="color: {{ ats_color }}">{{ ats_label }}</div>
+          </div>
+        </div>
+        <div class="mt-3 p-3 rounded" style="background: rgba(255,255,255,0.05);">
+          <p class="text-muted small mb-0">{{ data.overall_summary }}</p>
+        </div>
+      </div>
+
+      <!-- Strengths -->
+      {% if data.strengths %}
+      <div class="cc-card p-3 mb-4">
+        <h6 class="fw-semibold mb-2 text-success"><i class="bi bi-hand-thumbs-up-fill me-2"></i>Strengths</h6>
+        <ul class="list-unstyled mb-0">
+          {% for s in data.strengths %}
+          <li class="mb-1 small"><i class="bi bi-check-circle text-success me-2"></i>{{ s }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+      {% endif %}
+
+      <!-- Keywords Present -->
+      {% if data.keywords_present %}
+      <div class="cc-card p-3">
+        <h6 class="fw-semibold mb-2"><i class="bi bi-tags-fill me-2 text-primary"></i>Keywords Found</h6>
+        <div class="d-flex flex-wrap gap-1">
+          {% for kw in data.keywords_present %}
+          <span class="badge bg-primary-subtle text-primary">{{ kw }}</span>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- DETAILED FEEDBACK -->
+    <div class="col-lg-8">
+      <!-- Section Scores -->
+      <div class="cc-card p-4 mb-4">
+        <h5 class="fw-semibold mb-4"><i class="bi bi-list-check me-2 text-info"></i>Section-by-Section Analysis</h5>
+        {% for section in sections %}
+        <div class="section-card mb-3">
+          <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-2">
+            <div class="d-flex align-items-center gap-2">
+              <i class="{{ section.icon }} fs-5 text-primary"></i>
+              <span class="fw-semibold">{{ section.name }}</span>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+              <div class="section-score-bar">
+                <div class="section-score-fill"
+                     style="width: {{ section.data.score|default:0 }}%;
+                            background: {% if section.data.score >= 80 %}#22c55e{% elif section.data.score >= 60 %}#f59e0b{% else %}#ef4444{% endif %}">
+                </div>
+              </div>
+              <span class="fw-bold small"
+                    style="color: {% if section.data.score >= 80 %}#22c55e{% elif section.data.score >= 60 %}#f59e0b{% else %}#ef4444{% endif %}">
+                {{ section.data.score|default:0 }}%
+              </span>
+            </div>
+          </div>
+          {% if section.data.feedback %}
+          <p class="text-muted small mb-1">{{ section.data.feedback }}</p>
+          {% endif %}
+          {% if section.data.missing %}
+          <div class="d-flex flex-wrap gap-1 mt-1">
+            {% for m in section.data.missing %}
+            <span class="badge bg-danger-subtle text-danger small"><i class="bi bi-x-circle me-1"></i>{{ m }}</span>
+            {% endfor %}
+          </div>
+          {% endif %}
+        </div>
+        {% endfor %}
+      </div>
+
+      <!-- Missing Keywords -->
+      {% if data.keywords_missing %}
+      <div class="cc-card p-4 mb-4">
+        <h5 class="fw-semibold mb-3"><i class="bi bi-search me-2 text-warning"></i>Missing Keywords</h5>
+        <p class="text-muted small mb-3">Add these keywords to improve your ATS compatibility for {{ analysis.target_role|default:"your target role" }}:</p>
+        <div class="d-flex flex-wrap gap-2">
+          {% for kw in data.keywords_missing %}
+          <span class="badge bg-warning-subtle text-warning border border-warning-subtle px-3 py-2">{{ kw }}</span>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- Improvements & Suggestions -->
+      <div class="row g-4">
+        {% if data.improvements %}
+        <div class="col-md-6">
+          <div class="cc-card p-4 h-100">
+            <h6 class="fw-semibold mb-3 text-info"><i class="bi bi-arrow-up-circle-fill me-2"></i>Improvements</h6>
+            <ul class="list-unstyled mb-0">
+              {% for imp in data.improvements %}
+              <li class="mb-2 small"><i class="bi bi-arrow-right text-info me-2"></i>{{ imp }}</li>
+              {% endfor %}
+            </ul>
+          </div>
+        </div>
+        {% endif %}
+        {% if data.formatting_tips %}
+        <div class="col-md-6">
+          <div class="cc-card p-4 h-100">
+            <h6 class="fw-semibold mb-3 text-purple"><i class="bi bi-pencil-square me-2" style="color:#a78bfa"></i>Formatting Tips</h6>
+            <ul class="list-unstyled mb-0">
+              {% for tip in data.formatting_tips %}
+              <li class="mb-2 small"><i class="bi bi-dot text-muted me-1"></i>{{ tip }}</li>
+              {% endfor %}
+            </ul>
+          </div>
+        </div>
+        {% endif %}
+      </div>
+
+      {% if data.suggestions %}
+      <div class="cc-card p-4 mt-4">
+        <h6 class="fw-semibold mb-3 text-success"><i class="bi bi-lightbulb-fill me-2"></i>Actionable Suggestions</h6>
+        <div class="row g-2">
+          {% for sug in data.suggestions %}
+          <div class="col-md-6">
+            <div class="suggestion-chip"><i class="bi bi-arrow-right-circle text-success me-2 flex-shrink-0"></i>{{ sug }}</div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+// ATS Gauge Chart
+const ctx = document.getElementById('atsGauge');
+if (ctx) {
+  const score = {{ ats_score }};
+  new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      datasets: [{
+        data: [score, 100 - score],
+        backgroundColor: ['{{ ats_color }}', 'rgba(255,255,255,0.05)'],
+        borderWidth: 0,
+        circumference: 270,
+        rotation: 225,
+      }]
+    },
+    options: {
+      responsive: false,
+      cutout: '75%',
+      plugins: { legend: { display: false }, tooltip: { enabled: false } },
+      animation: { animateRotate: true, duration: 1500 }
+    }
+  });
+}
+</script>
+{% endblock %}

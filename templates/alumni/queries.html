@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Ask {{ alumni.first_name }} — CampusConnect{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="row justify-content-center">
+    <!-- Main Column -->
+    <div class="col-lg-8">
+      <a href="{% url 'accounts:profile' alumni.pk %}" class="btn btn-sm btn-outline-secondary mb-4">
+        <i class="bi bi-arrow-left me-1"></i>Back to {{ alumni.first_name }}'s Profile
+      </a>
+
+      <!-- Q&A thread -->
+      <div class="cc-card mb-4 overflow-hidden">
+        <div class="cc-card-header bg-dark bg-opacity-25 py-3">
+          <div class="d-flex align-items-center gap-3">
+            <div class="avatar-placeholder-sm" style="background: linear-gradient(135deg, #f59e0b, #f97316)">{{ alumni.first_name|first|upper|default:"A" }}</div>
+            <h5 class="fw-bold mb-0">Ask {{ alumni.first_name }} a Question</h5>
+          </div>
+        </div>
+        
+        <div class="card-body p-0">
+          <!-- Existing Queries -->
+          {% for q in queries %}
+          <div class="p-4 border-bottom border-secondary" style="background: rgba(255,255,255,0.02)">
+            <!-- Question -->
+            <div class="d-flex gap-3 mb-3">
+              <div class="avatar-placeholder-sm opacity-75">{{ q.from_user.first_name|first|upper|default:"U" }}</div>
+              <div class="flex-grow-1">
+                <div class="fw-semibold small">{{ q.from_user.get_full_name|default:q.from_user.username }} <span class="text-muted fw-normal ms-2">{{ q.created_at|date:"M j, Y" }}</span></div>
+                <p class="mb-0 mt-1">{{ q.question }}</p>
+              </div>
+            </div>
+            
+            <!-- Answer -->
+            {% if q.answer %}
+            <div class="d-flex gap-3 ms-md-5 p-3 rounded border border-warning border-opacity-25" style="background: rgba(245,158,11,0.05)">
+              <div class="flex-grow-1">
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                  <div class="fw-semibold text-warning small"><i class="bi bi-reply-fill me-1"></i>{{ alumni.first_name }} replied</div>
+                  {% if q.answered_at %}<small class="text-muted">{{ q.answered_at|date:"M j, Y" }}</small>{% endif %}
+                </div>
+                <p class="mb-0 text-light mt-1">{{ q.answer }}</p>
+              </div>
+            </div>
+            {% elif user == alumni %}
+            <!-- Answer form for alumni -->
+            <div class="ms-md-5 mt-2">
+              <form method="post" action="{% url 'alumni:answer_query' q.pk %}" class="d-flex gap-2">
+                {% csrf_token %}
+                <input type="text" name="answer" class="form-control form-control-sm border-warning" placeholder="Write your reply..." required>
+                <button type="submit" class="btn btn-warning btn-sm text-dark fw-semibold">Reply</button>
+              </form>
+            </div>
+            {% else %}
+            <div class="ms-md-5 mt-2 text-muted small"><i class="bi bi-hourglass me-1"></i>Waiting for answer</div>
+            {% endif %}
+          </div>
+          {% empty %}
+          <div class="p-5 text-center text-muted">
+            <i class="bi bi-chat-heart fs-1 d-block mb-3 opacity-25"></i>
+            <h6>No questions asked yet</h6>
+            <p class="small mb-0">Be the first to ask {{ alumni.first_name }} for advice!</p>
+          </div>
+          {% endfor %}
+        </div>
+        
+        <!-- Ask Form -->
+        {% if user.is_authenticated and user != alumni %}
+        <div class="card-footer p-4 border-top border-secondary">
+          <form method="post">
+            {% csrf_token %}
+            <div class="mb-3">
+              <label class="form-label fw-semibold text-info"><i class="bi bi-chat-right-text me-2"></i>Your Question</label>
+              {{ form.question }}
+              <div class="form-text text-muted">Keep it brief and specific (e.g., "What to study for the system design round?")</div>
+            </div>
+            <button type="submit" class="btn btn-primary"><i class="bi bi-send me-2"></i>Post Question</button>
+          </form>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
