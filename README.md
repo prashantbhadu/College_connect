@@ -1,3 +1,4 @@
+# College_connect
 # CampusConnect
 
 A modern student networking and placement management platform built with Django, Bootstrap 5, and OpenAI.
