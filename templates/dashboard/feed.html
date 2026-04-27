@@ -20,18 +20,20 @@
             <div class="d-flex align-items-start gap-3">
               <div class="company-avatar">
                 {% if post.company_logo %}
-                  <img src="{{ post.company_logo.url }}" alt="{{ post.company_name }}" width="44" height="44">
+                <img src="{{ post.company_logo.url }}" alt="{{ post.company_name }}" width="44" height="44">
                 {% else %}
-                  {{ post.company_name|first|upper }}
+                {{ post.company_name|first|upper }}
                 {% endif %}
               </div>
               <div class="flex-grow-1">
                 <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
                   <div>
-                    <h6 class="mb-1 fw-semibold">{{ post.company_name }} <span class="text-muted fw-normal">— {{ post.role }}</span></h6>
+                    <h6 class="mb-1 fw-semibold">{{ post.company_name }} <span class="text-muted fw-normal">— {{
+                        post.role }}</span></h6>
                     <div class="d-flex flex-wrap gap-2">
                       <span class="badge cc-badge-role-{{ post.role_type }}">{{ post.get_role_type_display }}</span>
-                      {% if post.ctc %}<span class="badge bg-success-subtle text-success"><i class="bi bi-cash me-1"></i>{{ post.ctc }}</span>{% endif %}
+                      {% if post.ctc %}<span class="badge bg-success-subtle text-success"><i
+                          class="bi bi-cash me-1"></i>{{ post.ctc }}</span>{% endif %}
                     </div>
                   </div>
                   <div class="text-end">
@@ -65,7 +67,13 @@
           {% for post in recent_alumni_posts %}
           <div class="alumni-post-feed-item">
             <div class="d-flex gap-3 align-items-start">
-              <div class="alumni-avatar">{{ post.author.first_name|first|upper|default:post.author.username|first|upper }}</div>
+              <div class="alumni-avatar">
+                {% if post.author.profile_pic %}
+                <img src="{{ post.author.profile_pic.url }}" alt="{{ post.author.username }}" width="44" height="44">
+                {% else %}
+                {{ post.author.first_name|first|upper|default:post.author.username|first|upper }}
+                {% endif %}
+              </div>
               <div class="flex-grow-1">
                 <div class="d-flex justify-content-between align-items-start">
                   <div>
@@ -79,7 +87,8 @@
               </div>
             </div>
             <div class="text-end mt-2">
-              <a href="{% url 'alumni:post_detail' post.pk %}" class="btn btn-sm btn-link text-decoration-none">Read more →</a>
+              <a href="{% url 'alumni:post_detail' post.pk %}" class="btn btn-sm btn-link text-decoration-none">Read
+                more →</a>
             </div>
           </div>
           {% empty %}
@@ -99,9 +108,9 @@
       <div class="cc-card mb-4">
         <div class="card-body text-center p-4">
           {% if user.profile_pic %}
-            <img src="{{ user.profile_pic.url }}" class="avatar-lg rounded-circle mb-3" alt="{{ user.username }}" />
+          <img src="{{ user.profile_pic.url }}" class="avatar-lg rounded-circle mb-3" alt="{{ user.username }}" />
           {% else %}
-            <div class="avatar-placeholder-lg mx-auto mb-3">{{ user.first_name|first|upper|default:"U" }}</div>
+          <div class="avatar-placeholder-lg mx-auto mb-3">{{ user.first_name|first|upper|default:"U" }}</div>
           {% endif %}
           <h6 class="fw-bold mb-1">{{ user.get_full_name|default:user.username }}</h6>
           <p class="text-muted small mb-2">{{ user.get_branch_display|default:"—" }}{% if user.is_student %} · Sem {{ user.semester|default:"?" }}{% elif user.is_alumni %} · {{ user.graduation_year|default:"Alumni" }}{% endif %}</p>
@@ -145,7 +154,8 @@
           <div class="p-3 text-center text-muted small">No upcoming drives</div>
           {% endfor %}
           <div class="p-2 text-center">
-            <a href="{% url 'placements:calendar' %}" class="btn btn-sm btn-link text-decoration-none">View Calendar →</a>
+            <a href="{% url 'placements:calendar' %}" class="btn btn-sm btn-link text-decoration-none">View Calendar
+              →</a>
           </div>
         </div>
       </div>

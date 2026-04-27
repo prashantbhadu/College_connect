@@ -1,8 +1,14 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.db.models import Q
 from django.utils import timezone
 from placements.models import PlacementPost
 from alumni.models import AlumniPost
+
+
+def landing_page(request):
+    if request.user.is_authenticated:
+        return redirect('dashboard:feed')
+    return render(request, 'dashboard/landing.html')
 
 
 def feed(request):
