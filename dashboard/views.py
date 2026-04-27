@@ -1,21 +1,15 @@
-<<<<<<< HEAD
 from django.shortcuts import render, redirect
-=======
-from django.shortcuts import render
->>>>>>> 95a4aa9 (Till the alumni, student and admin)
 from django.db.models import Q
 from django.utils import timezone
 from placements.models import PlacementPost
 from alumni.models import AlumniPost
 
-<<<<<<< HEAD
+
 def landing_page(request):
     if request.user.is_authenticated:
         return redirect('dashboard:feed')
     return render(request, 'dashboard/landing.html')
 
-=======
->>>>>>> 95a4aa9 (Till the alumni, student and admin)
 
 def feed(request):
     recent_placements = PlacementPost.objects.filter(
