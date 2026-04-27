@@ -1,0 +1,271 @@
+{% extends 'base.html' %}
+
+{% block title %}Placement Statistics - CampusConnect{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+    <div>
+      <h2 class="fw-bold mb-1"><i class="bi bi-bar-chart-line-fill me-2 text-primary"></i>Placement Statistics</h2>
+      <p class="text-muted mb-0">
+        {% if can_manage_statistics %}
+        Admin-managed placement statistics with year-wise historical filtering.
+        {% else %}
+        Placement statistics with year-wise historical filtering. Records are managed by the admin.
+        {% endif %}
+      </p>
+    </div>
+    <div class="d-flex gap-2 flex-wrap">
+      {% if can_manage_statistics %}
+      <a href="{% url 'placements:record_create' %}" class="btn btn-primary btn-sm">
+        <i class="bi bi-plus-circle me-1"></i>Add Record
+      </a>
+      {% endif %}
+      <a href="{% url 'placements:list' %}" class="btn btn-outline-secondary btn-sm">
+        <i class="bi bi-arrow-left me-1"></i>Back to Placements
+      </a>
+    </div>
+  </div>
+
+  <div class="cc-card p-3 mb-4">
+    <form method="get" class="row g-2 align-items-end">
+      <div class="col-md-3">
+        <label class="form-label small fw-semibold">Year</label>
+        <select name="year" class="form-select form-select-sm">
+          <option value="">All Years</option>
+          {% for value in year_options %}
+          <option value="{{ value }}" {% if selected_year == value|stringformat:"s" %}selected{% endif %}>{{ value }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label small fw-semibold">Branch</label>
+        <select name="branch" class="form-select form-select-sm">
+          <option value="">All Branches</option>
+          {% for value, label in branch_filter_choices %}
+          <option value="{{ value }}" {% if selected_branch == value %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-2">
+        <label class="form-label small fw-semibold">Status</label>
+        <select name="status" class="form-select form-select-sm">
+          <option value="">All Status</option>
+          {% for value, label in status_options %}
+          <option value="{{ value }}" {% if selected_status == value %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-2">
+        <label class="form-label small fw-semibold">Company</label>
+        <input type="text" name="company" value="{{ selected_company }}" class="form-control form-control-sm" placeholder="e.g. Infosys">
+      </div>
+      <div class="col-md-2">
+        <label class="form-label small fw-semibold">Search</label>
+        <input type="text" name="q" value="{{ search }}" class="form-control form-control-sm" placeholder="Student or role">
+      </div>
+      <div class="col-md-2">
+        <button type="submit" class="btn btn-primary btn-sm w-100"><i class="bi bi-funnel me-1"></i>Apply</button>
+      </div>
+      <div class="col-md-2">
+        <a href="{% url 'placements:statistics' %}" class="btn btn-outline-secondary btn-sm w-100">Reset</a>
+      </div>
+    </form>
+  </div>
+
+  <div class="row g-3 mb-4">
+    <div class="col-md-6 col-xl-3">
+      <div class="cc-card p-4 h-100">
+        <div class="text-muted small text-uppercase mb-2">Records</div>
+        <div class="display-6 fw-bold text-primary">{{ stats.total_records|default:0 }}</div>
+        <div class="small text-muted">Matching current filters</div>
+      </div>
+    </div>
+    <div class="col-md-6 col-xl-3">
+      <div class="cc-card p-4 h-100">
+        <div class="text-muted small text-uppercase mb-2">Placed Students</div>
+        <div class="display-6 fw-bold text-success">{{ stats.total_students|default:0 }}</div>
+        <div class="small text-muted">Unique students in records</div>
+      </div>
+    </div>
+    <div class="col-md-6 col-xl-3">
+      <div class="cc-card p-4 h-100">
+        <div class="text-muted small text-uppercase mb-2">Hiring Companies</div>
+        <div class="display-6 fw-bold text-info">{{ stats.total_companies|default:0 }}</div>
+        <div class="small text-muted">Distinct companies</div>
+      </div>
+    </div>
+    <div class="col-md-6 col-xl-3">
+      <div class="cc-card p-4 h-100">
+        <div class="text-muted small text-uppercase mb-2">Highest Package</div>
+        <div class="display-6 fw-bold text-warning">
+          {% if stats.highest_package %}{{ stats.highest_package }} LPA{% else %}N/A{% endif %}
+        </div>
+        <div class="small text-muted">
+          Average:
+          {% if stats.avg_package %}{{ stats.avg_package|floatformat:2 }} LPA{% else %}N/A{% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-4 mb-4">
+    <div class="col-lg-4">
+      <div class="cc-card p-3 h-100">
+        <h5 class="fw-semibold mb-3">Top Companies</h5>
+        <div class="chart-wrap">
+          <canvas id="companyChart"></canvas>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-4">
+      <div class="cc-card p-3 h-100">
+        <h5 class="fw-semibold mb-3">Branch Distribution</h5>
+        <div class="chart-wrap">
+          <canvas id="branchChart"></canvas>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-4">
+      <div class="cc-card p-3 h-100">
+        <h5 class="fw-semibold mb-3">Year-wise Trend</h5>
+        <div class="chart-wrap">
+          <canvas id="yearChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="cc-card">
+    <div class="cc-card-header">
+      <div>
+        <h5 class="mb-0 fw-semibold">Placement Records</h5>
+        <span class="text-muted small">Showing {{ record_count }} record{{ record_count|pluralize }}{% if record_count > 50 %}, latest 50 below{% endif %}</span>
+      </div>
+    </div>
+    <div class="table-responsive">
+      <table class="table table-dark table-hover align-middle mb-0">
+        <thead>
+          <tr>
+            <th>Student</th>
+            <th>Company</th>
+            <th>Role</th>
+            <th>Year</th>
+            <th>Status</th>
+            <th>Branch</th>
+            <th>Package</th>
+            {% if can_manage_statistics %}
+            <th class="text-end">Actions</th>
+            {% endif %}
+          </tr>
+        </thead>
+        <tbody>
+          {% for record in records %}
+          <tr>
+            <td>
+              <div class="fw-semibold">{{ record.student.get_full_name|default:record.student.username }}</div>
+              <div class="small text-muted">{{ record.student.username }}</div>
+            </td>
+            <td>{{ record.company_name }}</td>
+            <td>{{ record.role }}</td>
+            <td>{{ record.placement_year }}</td>
+            <td><span class="badge bg-primary-subtle text-primary">{{ record.get_placement_status_display }}</span></td>
+            <td>{{ record.get_branch_display|default:"-" }}</td>
+            <td>
+              {% if record.package_display %}
+                {{ record.package_display }}
+              {% elif record.package_lpa %}
+                {{ record.package_lpa }} LPA
+              {% else %}
+                -
+              {% endif %}
+            </td>
+            {% if can_manage_statistics %}
+            <td class="text-end">
+              <a href="{% url 'placements:record_edit' record.pk %}" class="btn btn-outline-warning btn-sm">
+                <i class="bi bi-pencil"></i>
+              </a>
+              <a href="{% url 'placements:record_delete' record.pk %}" class="btn btn-outline-danger btn-sm">
+                <i class="bi bi-trash"></i>
+              </a>
+            </td>
+            {% endif %}
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="{% if can_manage_statistics %}8{% else %}7{% endif %}" class="text-center text-muted py-5">No placement records found for the selected filters.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  const companyData = {{ company_chart_json|safe }};
+  const branchData = {{ branch_chart_json|safe }};
+  const yearData = {{ yearly_chart_json|safe }};
+
+  const chartDefaults = {
+    plugins: {
+      legend: { labels: { color: '#cbd5e1' } }
+    },
+    scales: {
+      x: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(255,255,255,0.06)' } },
+      y: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(255,255,255,0.06)' }, beginAtZero: true }
+    }
+  };
+
+  new Chart(document.getElementById('companyChart'), {
+    type: 'bar',
+    data: {
+      labels: companyData.map(item => item.company_name),
+      datasets: [{
+        label: 'Records',
+        data: companyData.map(item => item.total),
+        backgroundColor: 'rgba(99,102,241,0.65)',
+        borderColor: '#818cf8',
+        borderWidth: 1,
+        borderRadius: 8
+      }]
+    },
+    options: chartDefaults
+  });
+
+  new Chart(document.getElementById('branchChart'), {
+    type: 'doughnut',
+    data: {
+      labels: branchData.map(item => item.branch),
+      datasets: [{
+        data: branchData.map(item => item.total),
+        backgroundColor: ['#6366f1', '#22c55e', '#f59e0b', '#0ea5e9', '#f43f5e', '#14b8a6', '#eab308']
+      }]
+    },
+    options: {
+      plugins: {
+        legend: { labels: { color: '#cbd5e1' } }
+      }
+    }
+  });
+
+  new Chart(document.getElementById('yearChart'), {
+    type: 'line',
+    data: {
+      labels: yearData.map(item => item.placement_year),
+      datasets: [{
+        label: 'Placed Records',
+        data: yearData.map(item => item.total),
+        fill: true,
+        tension: 0.35,
+        backgroundColor: 'rgba(34,197,94,0.12)',
+        borderColor: '#22c55e',
+        pointBackgroundColor: '#4ade80'
+      }]
+    },
+    options: chartDefaults
+  });
+</script>
+{% endblock %}

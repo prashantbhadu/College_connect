@@ -35,8 +35,11 @@
             </div>
           </div>
           {% if applied %}<span class="badge bg-success fs-6"><i class="bi bi-check-circle me-1"></i>Applied</span>{% endif %}
-          {% if user.is_staff or user == post.posted_by %}
+          {% if user.is_admin or user == post.posted_by %}
           <div class="d-flex gap-1 ms-auto">
+            {% if user.is_admin %}
+            <a href="{% url 'placements:record_create' %}?company_name={{ post.company_name|urlencode }}&role={{ post.role|urlencode }}" class="btn btn-sm btn-outline-info" title="Add Placement Record"><i class="bi bi-clipboard-plus"></i></a>
+            {% endif %}
             <a href="{% url 'placements:edit' post.pk %}" class="btn btn-sm btn-outline-warning" title="Edit Opportunity"><i class="bi bi-pencil"></i></a>
             <a href="{% url 'placements:delete' post.pk %}" class="btn btn-sm btn-outline-danger" title="Delete Opportunity"><i class="bi bi-trash"></i></a>
           </div>

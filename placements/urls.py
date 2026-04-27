@@ -5,6 +5,10 @@ app_name = 'placements'
 
 urlpatterns = [
     path('', views.placement_list, name='list'),
+    path('statistics/', views.placement_statistics, name='statistics'),
+    path('statistics/add/', views.placement_record_create, name='record_create'),
+    path('statistics/<int:pk>/edit/', views.placement_record_update, name='record_edit'),
+    path('statistics/<int:pk>/delete/', views.placement_record_delete, name='record_delete'),
     path('create/', views.placement_create, name='create'),
     path('<int:pk>/', views.placement_detail, name='detail'),
     path('<int:pk>/edit/', views.placement_update, name='edit'),

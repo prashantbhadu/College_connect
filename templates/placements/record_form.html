@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}{% if record_mode == 'edit' %}Edit Placement Record{% else %}Add Placement Record{% endif %} - CampusConnect{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="row justify-content-center">
+    <div class="col-lg-9">
+      <div class="cc-card p-4">
+        <div class="d-flex gap-3 align-items-center mb-4">
+          <div class="auth-icon"><i class="bi bi-clipboard-data fs-3 text-primary"></i></div>
+          <div>
+            <h3 class="fw-bold mb-0">{% if record_mode == 'edit' %}Edit Placement Record{% else %}Add Placement Record{% endif %}</h3>
+            <p class="text-muted mb-0">Maintain year-wise student placement outcomes for statistics and reporting.</p>
+          </div>
+        </div>
+        <form method="post">
+          {% csrf_token %}
+          {% crispy form %}
+          <div class="d-flex gap-3 mt-4 flex-wrap">
+            <button type="submit" class="btn btn-primary btn-lg px-4">
+              <i class="bi bi-save me-2"></i>{% if record_mode == 'edit' %}Update Record{% else %}Save Record{% endif %}
+            </button>
+            <a href="{% url 'placements:statistics' %}" class="btn btn-outline-secondary btn-lg">Cancel</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -61,6 +61,10 @@ class UserProfile(AbstractUser):
     def is_alumni(self):
         return self.user_type == 'alumni'
 
+    @property
+    def is_admin(self):
+        return self.user_type == 'admin' or self.is_staff or self.is_superuser
+
     def get_profile_pic_url(self):
         if self.profile_pic:
             return self.profile_pic.url

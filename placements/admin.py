@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import PlacementPost, Application, CompanyThread
+from .models import PlacementPost, Application, CompanyThread, PlacementRecord
 
 class ApplicationInline(admin.TabularInline):
     model = Application
@@ -25,4 +25,13 @@ class ApplicationAdmin(admin.ModelAdmin):
 class CompanyThreadAdmin(admin.ModelAdmin):
     list_display = ('post', 'author', 'created_at')
 
-print("PLACEMENTS ADMIN LOADED")
+
+@admin.register(PlacementRecord)
+class PlacementRecordAdmin(admin.ModelAdmin):
+    list_display = (
+        'student', 'company_name', 'role', 'placement_status',
+        'placement_year', 'branch', 'package_lpa', 'recorded_by',
+    )
+    list_filter = ('placement_year', 'placement_status', 'role_type', 'branch')
+    search_fields = ('student__username', 'student__first_name', 'student__last_name', 'company_name', 'role')
+    autocomplete_fields = ('student', 'placement_post', 'recorded_by')

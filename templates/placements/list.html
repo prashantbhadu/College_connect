@@ -14,7 +14,10 @@
       <a href="{% url 'placements:calendar' %}" class="btn btn-outline-secondary btn-sm">
         <i class="bi bi-calendar3 me-1"></i>Calendar
       </a>
-      {% if user.is_staff %}
+      <a href="{% url 'placements:statistics' %}" class="btn btn-outline-info btn-sm">
+        <i class="bi bi-bar-chart-line me-1"></i>Statistics
+      </a>
+      {% if user.is_admin %}
       <a href="{% url 'placements:create' %}" class="btn btn-primary btn-sm">
         <i class="bi bi-plus-circle me-1"></i>Post Opportunity
       </a>
@@ -120,7 +123,7 @@
     <div class="col-12 text-center py-5">
       <i class="bi bi-briefcase fs-1 text-muted d-block mb-3 opacity-25"></i>
       <h5 class="text-muted">No placements found</h5>
-      <p class="text-muted">Try adjusting your filters {% if user.is_staff %}or <a href="{% url 'placements:create' %}">post one yourself</a>{% endif %}.</p>
+      <p class="text-muted">Try adjusting your filters {% if user.is_admin %}or <a href="{% url 'placements:create' %}">post one yourself</a>{% endif %}.</p>
     </div>
     {% endfor %}
   </div>

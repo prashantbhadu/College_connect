@@ -279,6 +279,18 @@ body {
   font-size: 0.75rem; text-align: center;
 }
 
+.chart-wrap {
+  position: relative;
+  min-height: 260px;
+}
+
+.table-dark {
+  --bs-table-bg: transparent;
+  --bs-table-striped-bg: rgba(255,255,255,0.02);
+  --bs-table-hover-bg: rgba(255,255,255,0.04);
+  --bs-table-border-color: var(--cc-border);
+}
+
 /* ===== ALUMNI CARDS ===== */
 .alumni-card { transition: transform 0.2s; }
 .alumni-card:hover { transform: translateY(-3px); }

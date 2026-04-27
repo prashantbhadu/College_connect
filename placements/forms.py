@@ -1,7 +1,8 @@
 from django import forms
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Submit, Row, Column, Field
-from .models import PlacementPost, CompanyThread
+from accounts.models import UserProfile
+from .models import PlacementPost, CompanyThread, PlacementRecord
 
 
 class PlacementPostForm(forms.ModelForm):
@@ -64,3 +65,60 @@ class ThreadMessageForm(forms.ModelForm):
                 'placeholder': 'Ask a question or share your experience...'
             })
         }
+
+
+class PlacementRecordForm(forms.ModelForm):
+    class Meta:
+        model = PlacementRecord
+        fields = [
+            'student', 'placement_post', 'company_name', 'role', 'role_type',
+            'placement_status', 'placement_year', 'branch', 'package_lpa',
+            'package_display', 'location', 'notes',
+        ]
+        widgets = {
+            'student': forms.Select(attrs={'class': 'form-select'}),
+            'placement_post': forms.Select(attrs={'class': 'form-select'}),
+            'company_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g. Microsoft'}),
+            'role': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g. Software Engineer'}),
+            'role_type': forms.Select(attrs={'class': 'form-select'}),
+            'placement_status': forms.Select(attrs={'class': 'form-select'}),
+            'placement_year': forms.NumberInput(attrs={'class': 'form-control', 'min': 2000, 'max': 2100}),
+            'branch': forms.Select(attrs={'class': 'form-select'}),
+            'package_lpa': forms.NumberInput(attrs={'class': 'form-control', 'min': 0, 'step': 0.01, 'placeholder': 'e.g. 12.50'}),
+            'package_display': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g. 12.5 LPA / 35K per month'}),
+            'location': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g. Bengaluru'}),
+            'notes': forms.Textarea(attrs={'class': 'form-control', 'rows': 4, 'placeholder': 'Optional notes about the placement result'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['student'].queryset = UserProfile.objects.filter(user_type='student').order_by('username')
+        self.fields['placement_post'].queryset = PlacementPost.objects.order_by('-created_at')
+        self.helper = FormHelper()
+        self.helper.form_tag = False
+        self.helper.layout = Layout(
+            Row(
+                Column('student', css_class='form-group col-md-6 mb-0'),
+                Column('placement_post', css_class='form-group col-md-6 mb-0'),
+                css_class='form-row'
+            ),
+            Row(
+                Column('company_name', css_class='form-group col-md-6 mb-0'),
+                Column('role', css_class='form-group col-md-6 mb-0'),
+                css_class='form-row'
+            ),
+            Row(
+                Column('role_type', css_class='form-group col-md-3 mb-0'),
+                Column('placement_status', css_class='form-group col-md-3 mb-0'),
+                Column('placement_year', css_class='form-group col-md-3 mb-0'),
+                Column('branch', css_class='form-group col-md-3 mb-0'),
+                css_class='form-row'
+            ),
+            Row(
+                Column('package_lpa', css_class='form-group col-md-4 mb-0'),
+                Column('package_display', css_class='form-group col-md-4 mb-0'),
+                Column('location', css_class='form-group col-md-4 mb-0'),
+                css_class='form-row'
+            ),
+            'notes',
+        )

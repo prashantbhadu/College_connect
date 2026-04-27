@@ -91,6 +91,7 @@
             <li><a class="dropdown-item" href="{% url 'accounts:my_profile' %}"><i class="bi bi-person me-2"></i>My Profile</a></li>
             <li><a class="dropdown-item" href="{% url 'accounts:profile_edit' %}"><i class="bi bi-pencil me-2"></i>Edit Profile</a></li>
             <li><a class="dropdown-item" href="{% url 'placements:my_applications' %}"><i class="bi bi-file-check me-2"></i>My Applications</a></li>
+            <li><a class="dropdown-item" href="{% url 'placements:statistics' %}"><i class="bi bi-bar-chart-line me-2"></i>Placement Statistics</a></li>
             <li><a class="dropdown-item" href="{% url 'resume_analyzer:history' %}"><i class="bi bi-clock-history me-2"></i>Resume History</a></li>
             {% if user.is_alumni %}
             <li><a class="dropdown-item" href="{% url 'alumni:my_mentorship' %}"><i class="bi bi-hand-thumbs-up me-2"></i>Mentorship</a></li>
