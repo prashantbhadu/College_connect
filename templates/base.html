@@ -1,6 +1,6 @@
 {% load static %}
 <!DOCTYPE html>
-<html lang="en" data-bs-theme="dark">
+<html lang="en" data-bs-theme="light">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -22,7 +22,7 @@
 <body>
 
 <!-- NAVBAR -->
-<nav class="navbar navbar-expand-lg navbar-dark sticky-top cc-navbar">
+<nav class="navbar navbar-expand-lg navbar-light sticky-top cc-navbar">
   <div class="container-fluid px-4">
     <a class="navbar-brand d-flex align-items-center gap-2 fw-bold" href="{% url 'dashboard:home' %}">
       <div class="brand-icon"><i class="bi bi-mortarboard-fill"></i></div>
@@ -102,7 +102,7 @@
         </li>
         {% else %}
         <li class="nav-item ms-2">
-          <a class="btn btn-outline-light btn-sm" href="{% url 'accounts:login' %}">Login</a>
+          <a class="btn btn-outline-primary btn-sm" href="{% url 'accounts:login' %}">Login</a>
         </li>
         <li class="nav-item ms-1">
           <a class="btn btn-primary btn-sm" href="{% url 'accounts:register_student' %}">Join Free</a>

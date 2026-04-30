@@ -144,7 +144,7 @@
           <div class="list-group-item bg-transparent border-secondary border-opacity-25 px-0 py-2">
             <div class="d-flex justify-content-between align-items-center">
               <div>
-                <a href="{% url 'accounts:profile' app.user.pk %}" class="text-decoration-none small text-light fw-bold">{{ app.user.get_full_name|default:app.user.username }}</a>
+                <a href="{% url 'accounts:profile' app.user.pk %}" class="text-decoration-none small text-dark fw-bold">{{ app.user.get_full_name|default:app.user.username }}</a>
                 <div class="text-muted" style="font-size: 0.7rem;">CGPA: {{ app.user.cgpa|default:"N/A" }} · {{ app.user.branch|default:"No Branch" }}</div>
               </div>
               <span class="badge bg-secondary-subtle text-secondary x-small" style="font-size: 0.6rem;">{{ app.applied_at|date:"M j" }}</span>

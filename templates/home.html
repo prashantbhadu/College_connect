@@ -21,14 +21,14 @@
           <a href="{% url 'dashboard:feed' %}" class="btn btn-primary btn-lg px-4">
             <i class="bi bi-grid-fill me-2"></i>Go to Dashboard
           </a>
-          <a href="{% url 'resume_analyzer:upload' %}" class="btn btn-outline-light btn-lg px-4">
+          <a href="{% url 'resume_analyzer:upload' %}" class="btn btn-outline-primary btn-lg px-4">
             <i class="bi bi-robot me-2"></i>Analyze Resume
           </a>
           {% else %}
           <a href="{% url 'accounts:register_student' %}" class="btn btn-primary btn-lg px-4">
             <i class="bi bi-person-plus-fill me-2"></i>Join as Student
           </a>
-          <a href="{% url 'accounts:register_alumni' %}" class="btn btn-outline-light btn-lg px-4">
+          <a href="{% url 'accounts:register_alumni' %}" class="btn btn-outline-primary btn-lg px-4">
             <i class="bi bi-award me-2"></i>Join as Alumni
           </a>
           {% endif %}
@@ -85,7 +85,7 @@
     <div class="row g-4">
       <div class="col-md-6 col-lg-3">
         <div class="feature-card h-100">
-          <div class="feature-icon" style="background: rgba(99,102,241,0.15); color: #818cf8">
+          <div class="feature-icon">
             <i class="bi bi-briefcase-fill fs-3"></i>
           </div>
           <h5 class="fw-semibold mt-3">Placement Tracker</h5>
