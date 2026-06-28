@@ -22,14 +22,14 @@
         <h1 class="fw-bold mb-4">{{ post.title }}</h1>
         
         <!-- Author Profile Snippet -->
-        <div class="d-flex gap-3 align-items-center mb-5 p-3 rounded" style="background: rgba(255,255,255,0.03);">
+        <div class="d-flex gap-3 align-items-center mb-5 p-3 rounded" style="background: rgba(141, 85, 36, 0.05);">
           {% if post.author.profile_pic %}
             <img src="{{ post.author.profile_pic.url }}" class="avatar-md rounded-circle" alt="{{ post.author.username }}">
           {% else %}
             <div class="avatar-placeholder-md">{{ post.author.first_name|first|upper|default:"A" }}</div>
           {% endif %}
           <div class="flex-grow-1">
-            <h6 class="fw-semibold mb-0"><a href="{% url 'accounts:profile' post.author.pk %}" class="text-decoration-none text-light">{{ post.author.get_full_name|default:post.author.username }}</a></h6>
+            <h6 class="fw-semibold mb-0"><a href="{% url 'accounts:profile' post.author.pk %}" class="text-decoration-none" style="color: var(--cc-primary);">{{ post.author.get_full_name|default:post.author.username }}</a></h6>
             <div class="text-muted small">{{ post.author.current_company|default:"Alumni" }} {% if post.author.current_role %}· {{ post.author.current_role }}{% endif %}</div>
           </div>
           {% if user.is_authenticated and not user.is_alumni %}
@@ -38,7 +38,7 @@
         </div>
 
         <!-- Body -->
-        <div class="post-body fs-5 text-light" style="line-height: 1.8; white-space: pre-line;">
+        <div class="post-body fs-5" style="line-height: 1.8; white-space: pre-line; color: var(--cc-text);">
           {{ post.content }}
         </div>
 

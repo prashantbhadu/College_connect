@@ -39,9 +39,15 @@
 
         <!-- Loading state -->
         <div class="text-center mt-4 d-none" id="loadingState">
-          <div class="spinner-border text-primary mb-3"></div>
-          <div class="fw-semibold">Analyzing your resume with AI...</div>
-          <div class="text-muted small">This may take a few seconds</div>
+          <div class="spinner-border text-primary mb-3" style="width: 3rem; height: 3rem;"></div>
+          <div class="h5 fw-bold mb-2" id="statusMessage">Initializing Analysis...</div>
+          <p class="text-muted mb-4" id="statusSubMessage">Setting up the AI engine</p>
+          
+          <div class="progress mb-2" style="height: 10px; border-radius: 10px; max-width: 400px; margin: 0 auto; background-color: #e9ecef;">
+            <div class="progress-bar progress-bar-striped progress-bar-animated bg-primary" 
+                 role="progressbar" style="width: 0%; border-radius: 10px;" id="analysisProgress"></div>
+          </div>
+          <div class="text-muted small fw-medium" id="progressPercentage">0%</div>
         </div>
       </div>
     </div>
@@ -95,8 +101,62 @@
 {% block extra_scripts %}
 <script>
 document.getElementById('uploadForm').addEventListener('submit', function() {
-  document.getElementById('analyzeBtn').classList.add('d-none');
-  document.getElementById('loadingState').classList.remove('d-none');
+  const analyzeBtn = document.getElementById('analyzeBtn');
+  const loadingState = document.getElementById('loadingState');
+  const statusMsg = document.getElementById('statusMessage');
+  const subMsg = document.getElementById('statusSubMessage');
+  const progressBar = document.getElementById('analysisProgress');
+  const progressPercent = document.getElementById('progressPercentage');
+
+  // Hide form button, show loading
+  analyzeBtn.classList.add('d-none');
+  loadingState.classList.remove('d-none');
+
+  // Messages to show during wait
+  const messages = [
+    { main: "Parsing Resume Content...", sub: "Wait for some time, resume is parsing..." },
+    { main: "Extracting Keywords...", sub: "Extracting technical and soft skills from your profile..." },
+    { main: "Analyzing Experience...", sub: "Mapping your background to industry standards..." },
+    { main: "Running ATS Check...", sub: "Validating structural compatibility and keyword density..." },
+    { main: "Generating Insights...", sub: "Almost there! Finalizing your AI feedback report..." }
+  ];
+
+  let currentMsgIndex = 0;
+  let progress = 0;
+
+  // Update loop
+  const interval = setInterval(() => {
+    // Gradually increase progress up to 98%
+    if (progress < 98) {
+      const increment = Math.random() * 3;
+      progress = Math.min(98, progress + increment);
+      progressBar.style.width = progress + '%';
+      progressPercent.innerText = Math.round(progress) + '%';
+    }
+
+    // Switch messages based on progress
+    const messageThreshold = (currentMsgIndex + 1) * (100 / (messages.length + 1));
+    if (progress > messageThreshold && currentMsgIndex < messages.length - 1) {
+      currentMsgIndex++;
+      
+      // Add a fade effect
+      statusMsg.style.opacity = '0';
+      subMsg.style.opacity = '0';
+      
+      setTimeout(() => {
+        statusMsg.innerText = messages[currentMsgIndex].main;
+        subMsg.innerText = messages[currentMsgIndex].sub;
+        statusMsg.style.opacity = '1';
+        subMsg.style.opacity = '1';
+      }, 300);
+    }
+  }, 400);
 });
 </script>
+
+<style>
+#statusMessage, #statusSubMessage {
+  transition: opacity 0.3s ease-in-out;
+}
+</style>
 {% endblock %}

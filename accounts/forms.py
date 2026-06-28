@@ -1,5 +1,6 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
+from django.core.validators import validate_email
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Row, Column
 from .models import UserProfile, Skill
@@ -20,6 +21,7 @@ class StudentRegistrationForm(UserCreationForm):
         super().__init__(*args, **kwargs)
         self.helper = FormHelper()
         self.helper.form_tag = False
+        
         self.helper.layout = Layout(
             Row(
                 Column('first_name', css_class='form-group col-md-6 mb-3'),
@@ -33,6 +35,20 @@ class StudentRegistrationForm(UserCreationForm):
             'password1',
             'password2',
         )
+
+    def clean_email(self):
+        email = self.cleaned_data.get('email')
+        if email:
+            email = email.lower()
+            try:
+                validate_email(email)
+            except forms.ValidationError:
+                raise forms.ValidationError("Please enter a valid email address.")
+            
+            if UserProfile.objects.filter(email__iexact=email).exists():
+                raise forms.ValidationError("An account with this email already exists.")
+        return email
+
 
     def save(self, commit=True):
         user = super().save(commit=False)
@@ -82,6 +98,20 @@ class AlumniRegistrationForm(UserCreationForm):
             'password1',
             'password2',
         )
+
+    def clean_email(self):
+        email = self.cleaned_data.get('email')
+        if email:
+            email = email.lower()
+            try:
+                validate_email(email)
+            except forms.ValidationError:
+                raise forms.ValidationError("Please enter a valid email address.")
+            
+            if UserProfile.objects.filter(email__iexact=email).exists():
+                raise forms.ValidationError("An account with this email already exists.")
+        return email
+
 
     def save(self, commit=True):
         user = super().save(commit=False)

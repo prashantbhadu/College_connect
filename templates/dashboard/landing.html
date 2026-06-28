@@ -38,7 +38,7 @@
     line-height: 1.1;
     letter-spacing: -1.5px;
     margin-bottom: 1.5rem;
-    background: linear-gradient(135deg, #fff 0%, #cbd5e1 100%);
+    background: linear-gradient(135deg, var(--cc-primary) 0%, var(--cc-secondary) 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
   }
@@ -130,12 +130,12 @@
     font-size: 2.5rem;
     font-weight: 800;
     margin-bottom: 1.5rem;
-    color: #f8fafc;
+    color: var(--cc-text);
   }
 
   .feature-text {
     font-size: 1.15rem;
-    color: #94a3b8;
+    color: var(--cc-text-muted);
     line-height: 1.7;
     margin-bottom: 2rem;
   }
@@ -238,7 +238,7 @@
         <p class="feature-text">
           Upload your resume and get an instant, industry-grade ATS score. Our DeepSeek-R1 AI extracts missing keywords, analyzes your formatting, and provides highly specific, actionable improvements tailored to your dream role.
         </p>
-        <ul class="list-unstyled text-muted fs-6">
+        <ul class="list-unstyled fs-6" style="color: var(--cc-text-muted);">
           <li class="mb-2"><i class="bi bi-check2-circle text-primary me-2"></i> Line-by-line feedback</li>
           <li class="mb-2"><i class="bi bi-check2-circle text-primary me-2"></i> Identifies missing critical skills</li>
           <li><i class="bi bi-check2-circle text-primary me-2"></i> Structured JSON output precision</li>
@@ -264,7 +264,7 @@
         <p class="feature-text">
           Connect directly with seniors who have already cracked the code. Read their industry insights, request 1:1 mentorship sessions, and build a professional network that goes beyond the classroom walls.
         </p>
-        <ul class="list-unstyled text-muted fs-6">
+        <ul class="list-unstyled fs-6" style="color: var(--cc-text-muted);">
           <li class="mb-2"><i class="bi bi-check2-circle text-warning me-2"></i> Verified alumni profiles</li>
           <li class="mb-2"><i class="bi bi-check2-circle text-warning me-2"></i> Direct messaging & guidance</li>
           <li><i class="bi bi-check2-circle text-warning me-2"></i> Real-world interview strategies</li>
@@ -284,7 +284,7 @@
         <p class="feature-text">
           Never miss an important deadline. View real-time campus placement opportunities, filter jobs based on your actual CGPA and branch eligibility, and track your active applications all in one unified dashboard.
         </p>
-        <a href="{% url 'accounts:register_student' %}" class="btn btn-outline-light mt-3 px-4 py-2 rounded-pill">View Opportunities <i class="bi bi-arrow-right ms-1"></i></a>
+        <a href="{% url 'accounts:register_student' %}" class="btn btn-outline-primary mt-3 px-4 py-2 rounded-pill">View Opportunities <i class="bi bi-arrow-right ms-1"></i></a>
       </div>
       <div class="col-lg-6 order-1 order-lg-2">
         <img src="{% static 'images/landing1.jpg' %}" alt="Campus study room" class="feature-image">
