@@ -5,308 +5,1014 @@
 
 {% block extra_head %}
 <style>
-  /* Landing Page Specific Styles */
-  
-  /* Hero Section with Image Background */
-  .hero-section {
-    position: relative;
-    padding: 140px 0 100px;
-    background-image: linear-gradient(to right, rgba(15, 23, 42, 0.95) 0%, rgba(15, 23, 42, 0.7) 100%), 
-                      url('{% static "images/landing2.jpg" %}');
-    background-size: cover;
-    background-position: center;
-    background-attachment: fixed;
-    overflow: hidden;
-  }
-  
-  .hero-badge {
-    background: rgba(99, 102, 241, 0.2);
-    border: 1px solid rgba(99, 102, 241, 0.4);
-    color: #a5b4fc;
-    padding: 6px 16px;
-    border-radius: 50px;
-    font-size: 0.85rem;
-    font-weight: 600;
-    display: inline-block;
-    margin-bottom: 1.5rem;
-    backdrop-filter: blur(5px);
-  }
+/* ============================================================
+   SCROLL ANIMATION ENGINE
+   ============================================================ */
+[data-scroll] {
+  opacity: 0;
+  will-change: opacity, transform;
+  transition: opacity 0.85s cubic-bezier(0.22,1,0.36,1),
+              transform 0.85s cubic-bezier(0.22,1,0.36,1);
+}
+[data-scroll].is-visible { opacity: 1; transform: none !important; }
 
-  .hero-title {
-    font-size: 4.5rem;
-    font-weight: 800;
-    line-height: 1.1;
-    letter-spacing: -1.5px;
-    margin-bottom: 1.5rem;
-    background: linear-gradient(135deg, var(--cc-primary) 0%, var(--cc-secondary) 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-  }
+[data-scroll="fade-up"]    { transform: translateY(55px); }
+[data-scroll="fade-down"]  { transform: translateY(-55px); }
+[data-scroll="fade-left"]  { transform: translateX(65px); }
+[data-scroll="fade-right"] { transform: translateX(-65px); }
+[data-scroll="fade-scale"] { transform: scale(0.87); }
+[data-scroll="fade"]       { transform: none; }
 
-  .hero-subtitle {
-    font-size: 1.25rem;
-    color: #e2e8f0;
-    max-width: 600px;
-    margin-bottom: 2.5rem;
-    line-height: 1.6;
-  }
+[data-scroll-group] > * {
+  opacity: 0;
+  transform: translateY(40px);
+  transition: opacity 0.7s cubic-bezier(0.22,1,0.36,1),
+              transform 0.7s cubic-bezier(0.22,1,0.36,1);
+}
+[data-scroll-group].is-visible > *:nth-child(1) { transition-delay: 0.05s; }
+[data-scroll-group].is-visible > *:nth-child(2) { transition-delay: 0.18s; }
+[data-scroll-group].is-visible > *:nth-child(3) { transition-delay: 0.31s; }
+[data-scroll-group].is-visible > *:nth-child(4) { transition-delay: 0.44s; }
+[data-scroll-group].is-visible > *:nth-child(5) { transition-delay: 0.57s; }
+[data-scroll-group].is-visible > * { opacity: 1; transform: none; }
 
-  .btn-hero {
-    padding: 14px 32px;
-    border-radius: 12px;
-    font-weight: 600;
-    font-size: 1.1rem;
-    transition: all 0.2s;
-  }
+[data-delay="100"] { transition-delay: 0.10s !important; }
+[data-delay="200"] { transition-delay: 0.20s !important; }
+[data-delay="300"] { transition-delay: 0.30s !important; }
+[data-delay="400"] { transition-delay: 0.40s !important; }
+[data-delay="500"] { transition-delay: 0.50s !important; }
+[data-delay="600"] { transition-delay: 0.60s !important; }
+[data-delay="700"] { transition-delay: 0.70s !important; }
 
-  .btn-hero-primary {
-    background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
-    color: white;
-    border: none;
-    box-shadow: 0 10px 20px rgba(99, 102, 241, 0.3);
-  }
+/* ============================================================
+   HERO
+   ============================================================ */
+.hero-section {
+  position: relative;
+  padding: 160px 0 120px;
+  background-image:
+    linear-gradient(to right, rgba(15,23,42,0.96) 0%, rgba(15,23,42,0.65) 100%),
+    url('{% static "images/landing2.jpg" %}');
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  overflow: hidden;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+}
 
-  .btn-hero-primary:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 15px 25px rgba(99, 102, 241, 0.4);
-    color: white;
-  }
+/* Animated gradient orbs */
+.hero-orb {
+  position: absolute; border-radius: 50%;
+  pointer-events: none; filter: blur(90px);
+}
+.hero-orb-a {
+  width: 520px; height: 520px;
+  background: radial-gradient(circle, rgba(99,102,241,0.18) 0%, transparent 65%);
+  top: -100px; left: -120px;
+  animation: orbA 16s ease-in-out infinite alternate;
+}
+.hero-orb-b {
+  width: 380px; height: 380px;
+  background: radial-gradient(circle, rgba(139,92,246,0.14) 0%, transparent 65%);
+  bottom: -60px; right: -80px;
+  animation: orbB 20s ease-in-out infinite alternate;
+}
+@keyframes orbA { from{transform:translate(0,0)} to{transform:translate(70px,50px)} }
+@keyframes orbB { from{transform:translate(0,0)} to{transform:translate(-50px,-60px)} }
 
-  .btn-hero-outline {
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(5px);
-    border: 2px solid rgba(255, 255, 255, 0.2);
-    color: #f8fafc;
-  }
+/* Particle canvas */
+#lp-particles {
+  position: absolute; inset: 0;
+  pointer-events: none; z-index: 0;
+}
 
-  .btn-hero-outline:hover {
-    background: rgba(255, 255, 255, 0.2);
-    border-color: rgba(255, 255, 255, 0.3);
-    color: white;
-  }
+/* Hero reveal wrapper */
+.hero-reveal {
+  opacity: 0;
+  transform: translateY(32px);
+  transition: opacity 1s cubic-bezier(0.22,1,0.36,1),
+              transform 1s cubic-bezier(0.22,1,0.36,1);
+  position: relative; z-index: 1;
+}
 
-  .stats-section {
-    background: #0f172a;
-    padding: 40px 0;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-  }
+.hero-badge {
+  background: rgba(99,102,241,0.18);
+  border: 1px solid rgba(99,102,241,0.4);
+  color: #a5b4fc;
+  padding: 7px 18px; border-radius: 50px;
+  font-size: 0.83rem; font-weight: 600;
+  display: inline-flex; align-items: center; gap: 0.5rem;
+  backdrop-filter: blur(6px);
+  margin-bottom: 1.5rem;
+}
+.hero-badge .pulse-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: #818cf8;
+  animation: pulseDot 2s ease-in-out infinite;
+}
+@keyframes pulseDot { 0%,100%{opacity:1} 50%{opacity:0.3} }
 
-  .stat-item h3 {
-    font-size: 2.5rem;
-    font-weight: 800;
-    color: #fff;
-    margin-bottom: 8px;
-  }
+.hero-title {
+  font-size: clamp(2.6rem, 6vw, 4.8rem);
+  font-weight: 800; line-height: 1.1;
+  letter-spacing: -1.5px; margin-bottom: 1.5rem;
+  color: white;
+}
+.hero-title .accent {
+  background: linear-gradient(125deg, #818cf8 0%, #a78bfa 50%, #f472b6 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
 
-  .stat-item p {
-    color: #94a3b8;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    font-size: 0.85rem;
-    margin-bottom: 0;
-  }
+/* Typewriter */
+#tw-text { display: inline; }
+.tw-cursor {
+  display: inline-block; width: 3px; height: 0.9em;
+  background: #818cf8; margin-left: 3px;
+  vertical-align: text-bottom;
+  animation: twBlink 0.85s step-end infinite;
+}
+@keyframes twBlink { 0%,100%{opacity:1} 50%{opacity:0} }
 
-  /* Feature Sections */
-  .feature-row {
-    padding: 80px 0;
-  }
+.hero-subtitle {
+  font-size: 1.2rem; color: #cbd5e1;
+  max-width: 560px; margin-bottom: 2.5rem; line-height: 1.7;
+}
 
-  .feature-image {
-    border-radius: 24px;
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-    width: 100%;
-    height: 400px;
-    object-fit: cover;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    transition: transform 0.5s ease;
-  }
+.btn-hero { padding: 14px 32px; border-radius: 12px; font-weight: 600; font-size: 1.05rem; transition: all 0.25s; }
+.btn-hero-primary {
+  background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+  color: white; border: none;
+  box-shadow: 0 10px 28px rgba(99,102,241,0.35);
+}
+.btn-hero-primary:hover { transform: translateY(-3px); box-shadow: 0 16px 36px rgba(99,102,241,0.5); color: white; }
+.btn-hero-outline {
+  background: rgba(255,255,255,0.08);
+  backdrop-filter: blur(6px);
+  border: 2px solid rgba(255,255,255,0.22); color: #f8fafc;
+}
+.btn-hero-outline:hover { background: rgba(255,255,255,0.16); border-color: rgba(255,255,255,0.35); color: white; transform: translateY(-2px); }
 
-  .feature-image:hover {
-    transform: scale(1.02);
-  }
+/* Hero trust row */
+.hero-trust {
+  display: flex; align-items: center; gap: 1.5rem;
+  margin-top: 2rem; flex-wrap: wrap;
+}
+.hero-trust-item { display: flex; align-items: center; gap: 0.5rem; color: rgba(255,255,255,0.55); font-size: 0.82rem; font-weight: 500; }
+.hero-trust-item i { color: #818cf8; }
 
-  .feature-title {
-    font-size: 2.5rem;
-    font-weight: 800;
-    margin-bottom: 1.5rem;
-    color: var(--cc-text);
-  }
+/* Hero stats */
+.hero-stats-row {
+  display: flex; gap: 2rem; margin-top: 2.5rem; flex-wrap: wrap;
+}
+.hero-stat { text-align: center; }
+.hero-stat-num { font-size: 2.2rem; font-weight: 900; color: white; display: block; line-height: 1; }
+.hero-stat-lbl { font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; color: rgba(255,255,255,0.5); }
+.hero-stat-sep { width: 1px; background: rgba(255,255,255,0.12); align-self: stretch; }
 
-  .feature-text {
-    font-size: 1.15rem;
-    color: var(--cc-text-muted);
-    line-height: 1.7;
-    margin-bottom: 2rem;
-  }
+/* Floating cards in hero */
+.hero-float-cards { position: relative; height: 420px; }
+.hfc {
+  position: absolute;
+  background: rgba(255,255,255,0.06);
+  backdrop-filter: blur(14px);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 16px; padding: 0.85rem 1.1rem;
+  font-size: 0.85rem; font-weight: 500; color: #f1f5f9;
+  display: flex; align-items: center; gap: 0.6rem;
+  white-space: nowrap;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+}
+.hfc-icon { width: 30px; height: 30px; border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: 0.95rem; }
+.hfc-indigo { background: rgba(99,102,241,0.25); color: #818cf8; }
+.hfc-green  { background: rgba(34,197,94,0.2); color: #4ade80; }
+.hfc-amber  { background: rgba(245,158,11,0.2); color: #fbbf24; }
+.hfc-pink   { background: rgba(236,72,153,0.2); color: #f472b6; }
 
-  .feature-icon-box {
-    width: 50px;
-    height: 50px;
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 24px;
-    margin-bottom: 20px;
-  }
+.hfc-1 { top: 10%; left: 0;    animation: hfcA 5s ease-in-out infinite; }
+.hfc-2 { top: 38%; right: 0;   animation: hfcB 6s ease-in-out infinite 1.2s; }
+.hfc-3 { bottom: 20%; left: 8%; animation: hfcA 4.5s ease-in-out infinite 2.2s; }
+.hfc-4 { top: 18%; right: 8%;  animation: hfcB 5.5s ease-in-out infinite 0.6s; }
+@keyframes hfcA { 0%,100%{transform:translateY(0) rotate(-1deg)} 50%{transform:translateY(-14px) rotate(1deg)} }
+@keyframes hfcB { 0%,100%{transform:translateY(0) rotate(1deg)}  50%{transform:translateY(-10px) rotate(-1deg)} }
 
-  .icon-primary { background: rgba(99, 102, 241, 0.15); color: #818cf8; }
-  .icon-success { background: rgba(34, 197, 94, 0.15); color: #4ade80; }
-  .icon-warning { background: rgba(245, 158, 11, 0.15); color: #fbbf24; }
+/* Centre visual card */
+.hero-central {
+  position: absolute; top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(255,255,255,0.06);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 24px; padding: 1.75rem;
+  width: 200px; text-align: center;
+  box-shadow: 0 24px 60px rgba(0,0,0,0.35);
+}
+.hero-central-icon {
+  width: 60px; height: 60px; border-radius: 16px;
+  background: linear-gradient(135deg, #6366f1, #a78bfa);
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 1.7rem; color: white; margin-bottom: 0.75rem;
+}
+.hero-central-label { font-size: 0.95rem; font-weight: 700; color: white; }
+.hero-central-sub   { font-size: 0.72rem; color: rgba(255,255,255,0.55); margin-top: 0.25rem; }
 
-  /* CTA Section */
-  .cta-section {
-    position: relative;
-    padding: 100px 0;
-    background-image: linear-gradient(to right, rgba(79, 70, 229, 0.9) 0%, rgba(15, 23, 42, 0.95) 100%), 
-                      url('{% static "images/landing5.jpg" %}');
-    background-size: cover;
-    background-position: center;
-    border-radius: 30px;
-    margin: 60px 15px;
-    overflow: hidden;
-    box-shadow: 0 30px 60px rgba(0,0,0,0.4);
-  }
+/* Orbit rings */
+.orbit-ring {
+  position: absolute; top: 50%; left: 50%;
+  border-radius: 50%;
+  border: 1.5px dashed rgba(255,255,255,0.08);
+  transform: translate(-50%,-50%);
+}
+.or-1 { width: 270px; height: 270px; animation: spin 28s linear infinite; }
+.or-2 { width: 370px; height: 370px; animation: spin 44s linear infinite reverse; }
+@keyframes spin { from{rotate:0deg} to{rotate:360deg} }
 
+/* ============================================================
+   MARQUEE
+   ============================================================ */
+.marquee-wrap {
+  overflow: hidden; background: #0f172a;
+  border-top: 1px solid rgba(255,255,255,0.06);
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  padding: 1.1rem 0;
+}
+.marquee-track {
+  display: flex; align-items: center; gap: 0;
+  width: max-content;
+  animation: marquee 26s linear infinite;
+}
+.marquee-wrap:hover .marquee-track { animation-play-state: paused; }
+.mq-item {
+  display: inline-flex; align-items: center; gap: 0.45rem;
+  padding: 0 2rem; white-space: nowrap;
+  font-size: 0.88rem; font-weight: 600; color: #64748b;
+  border-right: 1px solid rgba(255,255,255,0.06);
+}
+@keyframes marquee { from{transform:translateX(0)} to{transform:translateX(-50%)} }
+
+/* ============================================================
+   STATS SECTION (dark)
+   ============================================================ */
+.stats-section {
+  background: #0f172a; padding: 60px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+.stat-item h3 {
+  font-size: 3rem; font-weight: 900; color: #fff; margin-bottom: 6px;
+  line-height: 1;
+}
+.stat-item p { color: #94a3b8; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; font-size: 0.82rem; margin: 0; }
+.stat-vline { width: 1px; height: 70px; background: rgba(255,255,255,0.08); align-self: center; }
+
+/* ============================================================
+   HOW IT WORKS
+   ============================================================ */
+.how-section { background: var(--cc-background); padding: 7rem 0; }
+.how-step {
+  background: white; border: 1px solid var(--cc-border);
+  border-radius: 20px; padding: 2rem 1.75rem;
+  height: 100%;
+  transition: transform 0.35s cubic-bezier(0.22,1,0.36,1), box-shadow 0.35s;
+}
+.how-step:hover { transform: translateY(-8px); box-shadow: 0 20px 60px rgba(0,0,0,0.08); }
+.how-step-num {
+  width: 46px; height: 46px; border-radius: 14px;
+  background: linear-gradient(135deg, #6366f1, #818cf8);
+  color: white; font-size: 1.15rem; font-weight: 900;
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 1.1rem; box-shadow: 0 8px 20px rgba(99,102,241,0.3);
+}
+.how-step h5 { font-weight: 700; color: var(--cc-text); margin-bottom: 0.5rem; }
+.how-step p  { font-size: 0.88rem; color: var(--cc-text-muted); line-height: 1.65; margin: 0; }
+
+.how-connector { display: flex; align-items: center; justify-content: center; padding-top: 3rem; color: #6366f1; font-size: 1.6rem; }
+@media(max-width:991px) { .how-connector { transform: rotate(90deg); padding: 0.5rem 0; } }
+
+/* ============================================================
+   FEATURE SECTIONS
+   ============================================================ */
+.feature-row { padding: 90px 0; }
+.feature-row:nth-child(even) { background: #f8fafc; }
+
+.feature-image {
+  border-radius: 24px;
+  box-shadow: 0 30px 60px rgba(0,0,0,0.18);
+  width: 100%; height: 400px; object-fit: cover;
+  border: 1px solid rgba(0,0,0,0.06);
+  transition: transform 0.5s cubic-bezier(0.22,1,0.36,1), box-shadow 0.5s;
+}
+.feature-image:hover { transform: scale(1.025) rotate(0.5deg); box-shadow: 0 40px 80px rgba(0,0,0,0.22); }
+
+.feature-title { font-size: 2.6rem; font-weight: 800; margin-bottom: 1.25rem; color: var(--cc-text); letter-spacing: -0.5px; line-height: 1.15; }
+.feature-text  { font-size: 1.1rem; color: var(--cc-text-muted); line-height: 1.75; margin-bottom: 1.75rem; }
+
+.feature-icon-box {
+  width: 52px; height: 52px; border-radius: 14px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.4rem; margin-bottom: 1.25rem;
+}
+.icon-indigo { background: rgba(99,102,241,0.12); color: #818cf8; }
+.icon-amber  { background: rgba(245,158,11,0.12);  color: #fbbf24; }
+.icon-green  { background: rgba(34,197,94,0.12);   color: #4ade80; }
+
+.feature-check { display: flex; flex-direction: column; gap: 0.6rem; }
+.feature-check li { display: flex; align-items: center; gap: 0.6rem; font-size: 0.95rem; color: var(--cc-text-muted); }
+.feature-check li i { font-size: 1rem; }
+
+/* ============================================================
+   TESTIMONIALS
+   ============================================================ */
+.testi-section { background: var(--cc-background); padding: 7rem 0; }
+.testi-card {
+  background: white; border: 1px solid var(--cc-border);
+  border-radius: 20px; padding: 1.75rem; height: 100%;
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+.testi-card:hover { transform: translateY(-6px); box-shadow: 0 18px 50px rgba(0,0,0,0.08); }
+.testi-stars { color: #f59e0b; font-size: 0.88rem; letter-spacing: 2px; margin-bottom: 0.85rem; }
+.testi-quote { font-size: 0.9rem; line-height: 1.72; color: var(--cc-text); font-style: italic; margin-bottom: 1.25rem; }
+.testi-author { display: flex; align-items: center; gap: 0.75rem; }
+.testi-av {
+  width: 40px; height: 40px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; color: white; font-size: 0.95rem; flex-shrink: 0;
+}
+.ta-1 { background: linear-gradient(135deg,#6366f1,#818cf8); }
+.ta-2 { background: linear-gradient(135deg,#16a34a,#4ade80); }
+.ta-3 { background: linear-gradient(135deg,#d97706,#fbbf24); }
+.ta-4 { background: linear-gradient(135deg,#dc2626,#f87171); }
+.ta-5 { background: linear-gradient(135deg,#7c3aed,#a78bfa); }
+.ta-6 { background: linear-gradient(135deg,#0891b2,#67e8f9); }
+.testi-name { font-weight: 700; font-size: 0.86rem; color: var(--cc-text); }
+.testi-meta { font-size: 0.73rem; color: var(--cc-text-muted); }
+
+/* ============================================================
+   CTA SECTION
+   ============================================================ */
+.cta-section {
+  position: relative; padding: 110px 0;
+  background-image:
+    linear-gradient(135deg, rgba(79,70,229,0.92) 0%, rgba(15,23,42,0.97) 100%),
+    url('{% static "images/landing5.jpg" %}');
+  background-size: cover; background-position: center;
+  border-radius: 30px; margin: 60px 16px;
+  overflow: hidden;
+  box-shadow: 0 40px 80px rgba(0,0,0,0.4);
+}
+.cta-section::before {
+  content: '';
+  position: absolute; top: -40%; right: -10%;
+  width: 600px; height: 600px;
+  background: radial-gradient(circle, rgba(139,92,246,0.2) 0%, transparent 60%);
+  pointer-events: none;
+}
+
+.cta-chips { display: flex; flex-wrap: wrap; gap: 0.65rem; margin-top: 1.5rem; }
+.cta-chip {
+  display: inline-flex; align-items: center; gap: 0.4rem;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 30px; padding: 0.3rem 0.85rem;
+  font-size: 0.78rem; font-weight: 500; color: rgba(255,255,255,0.8);
+}
+.cta-chip i { color: #a5b4fc; }
+
+/* ============================================================
+   SECTION HEADER UTILITY
+   ============================================================ */
+.sec-eyebrow {
+  display: inline-block; font-size: 0.73rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.12em;
+  color: #6366f1;
+  background: rgba(99,102,241,0.1);
+  border: 1px solid rgba(99,102,241,0.2);
+  border-radius: 30px; padding: 0.3rem 0.9rem; margin-bottom: 1rem;
+}
+.sec-title { font-size: 2.3rem; font-weight: 800; color: var(--cc-text); line-height: 1.2; letter-spacing: -0.3px; }
+.sec-sub   { font-size: 1rem; color: var(--cc-text-muted); max-width: 520px; }
+
+/* Dark eyebrow variant */
+.sec-eyebrow-dark {
+  background: rgba(99,102,241,0.15);
+  border-color: rgba(99,102,241,0.3);
+  color: #a5b4fc;
+}
+
+/* Responsive */
+@media(max-width:991px) {
+  .hero-float-cards { display: none; }
+  .hero-section { min-height: auto; padding: 130px 0 90px; }
+  .feature-title { font-size: 2rem; }
+}
+@media(max-width:767px) {
+  .hero-title { font-size: 2.4rem; }
+  .stats-section { padding: 40px 0; }
+  .stat-vline { display: none; }
+  .cta-section { margin: 40px 8px; padding: 70px 0; }
+  .sec-title { font-size: 1.85rem; }
+}
 </style>
 {% endblock %}
 
+
 {% block content %}
-<!-- HERO SECTION -->
+
+<!-- ================================================
+     HERO SECTION
+     ================================================ -->
 <section class="hero-section">
-  <div class="container position-relative z-1">
-    <div class="row align-items-center">
-      <div class="col-lg-8">
-        <div class="hero-badge">
-          <i class="bi bi-geo-alt-fill me-1"></i> Your Campus. Your Future.
-        </div>
-        <h1 class="hero-title">Unlock Your Campus<br>Potential.</h1>
-        <p class="hero-subtitle">
-          The ultimate real-world platform connecting ambitious students with top opportunities, active alumni mentorship, and AI-powered resume optimization right on campus.
-        </p>
-        <div class="d-flex flex-wrap gap-3">
-          {% if user.is_authenticated %}
-            <a href="{% url 'dashboard:feed' %}" class="btn btn-hero btn-hero-primary">Go to Dashboard <i class="bi bi-arrow-right ms-2"></i></a>
-          {% else %}
-            <a href="{% url 'accounts:register_student' %}" class="btn btn-hero btn-hero-primary">Join as Student</a>
-            <a href="{% url 'accounts:register_alumni' %}" class="btn btn-hero btn-hero-outline">Join as Alumni</a>
-          {% endif %}
+  <!-- Animated bg orbs -->
+  <div class="hero-orb hero-orb-a"></div>
+  <div class="hero-orb hero-orb-b"></div>
+  <!-- Particle canvas -->
+  <canvas id="lp-particles"></canvas>
+
+  <div class="container position-relative" style="z-index:1;">
+    <div class="row align-items-center g-5">
+
+      <!-- Text col -->
+      <div class="col-lg-7">
+        <div class="hero-reveal" id="hero-reveal">
+          <div class="hero-badge">
+            <span class="pulse-dot"></span>
+            Your Campus. Your Future.
+          </div>
+          <h1 class="hero-title">
+            Unlock Your<br>
+            <span class="accent">
+              <span id="tw-text" data-words="Campus Career|Dream Placement|Alumni Network|ATS Resume"></span><span class="tw-cursor"></span>
+            </span><br>
+            Potential.
+          </h1>
+          <p class="hero-subtitle">
+            The ultimate real-world platform connecting ambitious students with top opportunities, active alumni mentorship, and AI-powered resume optimization — right on campus.
+          </p>
+          <div class="d-flex flex-wrap gap-3">
+            {% if user.is_authenticated %}
+              <a href="{% url 'dashboard:feed' %}" class="btn btn-hero btn-hero-primary" id="hero-dashboard-btn">
+                Go to Dashboard &nbsp;<i class="bi bi-arrow-right"></i>
+              </a>
+            {% else %}
+              <a href="{% url 'accounts:register_student' %}" class="btn btn-hero btn-hero-primary" id="hero-student-btn">
+                <i class="bi bi-person-plus-fill me-2"></i>Join as Student
+              </a>
+              <a href="{% url 'accounts:register_alumni' %}" class="btn btn-hero btn-hero-outline" id="hero-alumni-btn">
+                <i class="bi bi-award me-2"></i>Join as Alumni
+              </a>
+            {% endif %}
+          </div>
+          <!-- Trust row -->
+          <div class="hero-trust">
+            <span class="hero-trust-item"><i class="bi bi-shield-check-fill"></i> Free for Students</span>
+            <span class="hero-trust-item"><i class="bi bi-lightning-fill"></i> AI-Powered</span>
+            <span class="hero-trust-item"><i class="bi bi-people-fill"></i> Real Alumni</span>
+          </div>
+          <!-- Stats -->
+          <div class="hero-stats-row">
+            <div class="hero-stat">
+              <span class="hero-stat-num" data-count="500" data-suffix="+">500+</span>
+              <span class="hero-stat-lbl">Students</span>
+            </div>
+            <div class="hero-stat-sep"></div>
+            <div class="hero-stat">
+              <span class="hero-stat-num" data-count="200" data-suffix="+">200+</span>
+              <span class="hero-stat-lbl">Alumni</span>
+            </div>
+            <div class="hero-stat-sep"></div>
+            <div class="hero-stat">
+              <span class="hero-stat-num" data-count="50" data-suffix="+">50+</span>
+              <span class="hero-stat-lbl">Placements</span>
+            </div>
+          </div>
         </div>
       </div>
+
+      <!-- Visual col -->
+      <div class="col-lg-5 d-none d-lg-block">
+        <div class="hero-float-cards">
+          <div class="orbit-ring or-1"></div>
+          <div class="orbit-ring or-2"></div>
+          <!-- Central card -->
+          <div class="hero-central">
+            <div class="hero-central-icon"><i class="bi bi-mortarboard-fill"></i></div>
+            <div class="hero-central-label">CampusConnect</div>
+            <div class="hero-central-sub">Your career hub</div>
+          </div>
+          <!-- Floating notification cards -->
+          <div class="hfc hfc-1">
+            <span class="hfc-icon hfc-indigo"><i class="bi bi-briefcase-fill"></i></span>
+            Google SWE — 24 LPA 🎉
+          </div>
+          <div class="hfc hfc-2">
+            <span class="hfc-icon hfc-green"><i class="bi bi-robot"></i></span>
+            ATS Score: 87/100 ✓
+          </div>
+          <div class="hfc hfc-3">
+            <span class="hfc-icon hfc-amber"><i class="bi bi-chat-heart-fill"></i></span>
+            Mentorship Connected!
+          </div>
+          <div class="hfc hfc-4">
+            <span class="hfc-icon hfc-pink"><i class="bi bi-bell-fill"></i></span>
+            New drive: Microsoft
+          </div>
+        </div>
+      </div>
+
     </div>
   </div>
-</section>
+</section><!-- /hero -->
 
-<!-- STATS SECTION -->
-<section class="stats-section">
+
+<!-- ================================================
+     MARQUEE — COMPANIES STRIP
+     ================================================ -->
+<div class="marquee-wrap" aria-label="Top recruiting companies">
+  <div class="marquee-track">
+    <!-- set 1 -->
+    <span class="mq-item"><i class="bi bi-google" style="color:#4285F4"></i>Google</span>
+    <span class="mq-item"><i class="bi bi-microsoft" style="color:#00BCF2"></i>Microsoft</span>
+    <span class="mq-item"><i class="bi bi-amazon" style="color:#FF9900"></i>Amazon</span>
+    <span class="mq-item"><i class="bi bi-meta" style="color:#1877F2"></i>Meta</span>
+    <span class="mq-item"><i class="bi bi-apple"></i>Apple</span>
+    <span class="mq-item"><i class="bi bi-building" style="color:#0057e7"></i>Infosys</span>
+    <span class="mq-item"><i class="bi bi-building" style="color:#c4a000"></i>TCS</span>
+    <span class="mq-item"><i class="bi bi-building" style="color:#e87722"></i>Wipro</span>
+    <span class="mq-item"><i class="bi bi-building" style="color:#D90429"></i>Swiggy</span>
+    <span class="mq-item"><i class="bi bi-building" style="color:#FC5200"></i>Zomato</span>
+    <!-- set 2 (duplicate for seamless scroll) -->
+    <span class="mq-item"><i class="bi bi-google" style="color:#4285F4"></i>Google</span>
+    <span class="mq-item"><i class="bi bi-microsoft" style="color:#00BCF2"></i>Microsoft</span>
+    <span class="mq-item"><i class="bi bi-amazon" style="color:#FF9900"></i>Amazon</span>
+    <span class="mq-item"><i class="bi bi-meta" style="color:#1877F2"></i>Meta</span>
+    <span class="mq-item"><i class="bi bi-apple"></i>Apple</span>
+    <span class="mq-item"><i class="bi bi-building" style="color:#0057e7"></i>Infosys</span>
+    <span class="mq-item"><i class="bi bi-building" style="color:#c4a000"></i>TCS</span>
+    <span class="mq-item"><i class="bi bi-building" style="color:#e87722"></i>Wipro</span>
+    <span class="mq-item"><i class="bi bi-building" style="color:#D90429"></i>Swiggy</span>
+    <span class="mq-item"><i class="bi bi-building" style="color:#FC5200"></i>Zomato</span>
+  </div>
+</div>
+
+
+<!-- ================================================
+     STATS SECTION
+     ================================================ -->
+<section class="stats-section" id="platform-stats">
   <div class="container">
-    <div class="row text-center g-4">
-      <div class="col-md-4">
+    <div class="row text-center g-4 align-items-center justify-content-center" data-scroll-group>
+      <div class="col-6 col-md-3">
         <div class="stat-item">
-          <h3>100%</h3>
-          <p>Real Campus Community</p>
+          <h3 data-count="500" data-suffix="+">500+</h3>
+          <p>Active Students</p>
         </div>
       </div>
-      <div class="col-md-4">
+      <div class="col-auto stat-vline d-none d-md-block"></div>
+      <div class="col-6 col-md-3">
         <div class="stat-item">
-          <h3>24/7</h3>
-          <p>AI Resume Feedback</p>
-        </div>
-      </div>
-      <div class="col-md-4">
-        <div class="stat-item">
-          <h3>50+</h3>
+          <h3 data-count="200" data-suffix="+">200+</h3>
           <p>Alumni Mentors</p>
         </div>
       </div>
+      <div class="col-auto stat-vline d-none d-md-block"></div>
+      <div class="col-6 col-md-3">
+        <div class="stat-item">
+          <h3 data-count="87" data-suffix="%">87%</h3>
+          <p>AI Resume Feedback</p>
+        </div>
+      </div>
+      <div class="col-auto stat-vline d-none d-md-block"></div>
+      <div class="col-6 col-md-3">
+        <div class="stat-item">
+          <h3 data-count="50" data-suffix="+">50+</h3>
+          <p>Campus Placements</p>
+        </div>
+      </div>
     </div>
   </div>
 </section>
 
-<!-- FEATURES SECTION -->
-<div class="container py-5">
-  
-  <!-- Feature 1: AI Resume -->
-  <section class="feature-row">
-    <div class="row align-items-center g-5">
-      <div class="col-lg-6 order-2 order-lg-1">
-        <div class="feature-icon-box icon-primary">
-          <i class="bi bi-robot"></i>
+
+<!-- ================================================
+     HOW IT WORKS
+     ================================================ -->
+<section class="how-section" id="how-it-works">
+  <div class="container">
+    <div class="text-center mb-5" data-scroll="fade-up">
+      <span class="sec-eyebrow">How It Works</span>
+      <h2 class="sec-title mt-2">From Sign-Up to Dream Job<br>in 4 Simple Steps</h2>
+      <p class="sec-sub mx-auto mt-3">No guesswork. Just a clear path from profile to placement.</p>
+    </div>
+    <div class="row g-4 align-items-start">
+      <div class="col-lg-3 col-md-6" data-scroll="fade-up" data-delay="100">
+        <div class="how-step h-100">
+          <div class="how-step-num">1</div>
+          <h5>Create Your Profile</h5>
+          <p>Sign up in 60 seconds. Add your skills, branch, CGPA, and career goals to get a personalised experience.</p>
         </div>
-        <h2 class="feature-title">Beat the ATS with AI.</h2>
-        <p class="feature-text">
-          Upload your resume and get an instant, industry-grade ATS score. Our DeepSeek-R1 AI extracts missing keywords, analyzes your formatting, and provides highly specific, actionable improvements tailored to your dream role.
-        </p>
-        <ul class="list-unstyled fs-6" style="color: var(--cc-text-muted);">
-          <li class="mb-2"><i class="bi bi-check2-circle text-primary me-2"></i> Line-by-line feedback</li>
-          <li class="mb-2"><i class="bi bi-check2-circle text-primary me-2"></i> Identifies missing critical skills</li>
-          <li><i class="bi bi-check2-circle text-primary me-2"></i> Structured JSON output precision</li>
-        </ul>
       </div>
-      <div class="col-lg-6 order-1 order-lg-2">
-        <img src="{% static 'images/landing4.jpg' %}" alt="Student analyzing resume" class="feature-image">
+      <div class="col-lg-auto d-none d-lg-flex how-connector" data-scroll="fade" data-delay="150">
+        <i class="bi bi-arrow-right-circle-fill"></i>
+      </div>
+      <div class="col-lg-3 col-md-6" data-scroll="fade-up" data-delay="200">
+        <div class="how-step h-100">
+          <div class="how-step-num">2</div>
+          <h5>Upload Your Resume</h5>
+          <p>Our Gemini AI scores your resume, highlights missing keywords, and gives you a section-by-section improvement plan.</p>
+        </div>
+      </div>
+      <div class="col-lg-auto d-none d-lg-flex how-connector" data-scroll="fade" data-delay="250">
+        <i class="bi bi-arrow-right-circle-fill"></i>
+      </div>
+      <div class="col-lg-3 col-md-6" data-scroll="fade-up" data-delay="300">
+        <div class="how-step h-100">
+          <div class="how-step-num">3</div>
+          <h5>Connect with Alumni</h5>
+          <p>Browse verified alumni working at top companies. Request mentorship and get guidance tailored to your goals.</p>
+        </div>
+      </div>
+      <div class="col-lg-auto d-none d-lg-flex how-connector" data-scroll="fade" data-delay="350">
+        <i class="bi bi-arrow-right-circle-fill"></i>
+      </div>
+      <div class="col-lg-3 col-md-6" data-scroll="fade-up" data-delay="400">
+        <div class="how-step h-100">
+          <div class="how-step-num">4</div>
+          <h5>Apply & Track Drives</h5>
+          <p>Browse open placement drives matched to your profile, apply in one click, and track every status in your dashboard.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ================================================
+     FEATURE 1 — AI Resume
+     ================================================ -->
+<div class="container-fluid px-0">
+  <section class="feature-row">
+    <div class="container">
+      <div class="row align-items-center g-5">
+        <div class="col-lg-6 order-2 order-lg-1" data-scroll="fade-right">
+          <div class="feature-icon-box icon-indigo">
+            <i class="bi bi-robot"></i>
+          </div>
+          <h2 class="feature-title">Beat the ATS<br>with AI.</h2>
+          <p class="feature-text">
+            Upload your resume and get an instant, industry-grade ATS score. Our Gemini AI extracts missing keywords, analyses your formatting, and provides highly specific, actionable improvements tailored to your dream role.
+          </p>
+          <ul class="list-unstyled feature-check">
+            <li><i class="bi bi-check2-circle" style="color:#6366f1"></i> Line-by-line feedback on every section</li>
+            <li><i class="bi bi-check2-circle" style="color:#6366f1"></i> Identifies missing critical skills &amp; keywords</li>
+            <li><i class="bi bi-check2-circle" style="color:#6366f1"></i> ATS score out of 100 — know exactly where you stand</li>
+          </ul>
+          <a href="{% url 'resume_analyzer:upload' %}" class="btn btn-hero btn-hero-primary mt-4 d-inline-flex align-items-center gap-2" id="feat-resume-btn">
+            <i class="bi bi-robot"></i> Try AI Resume Analyser
+          </a>
+        </div>
+        <div class="col-lg-6 order-1 order-lg-2" data-scroll="fade-left">
+          <img src="{% static 'images/landing4.jpg' %}" alt="Student analyzing resume with AI" class="feature-image">
+        </div>
       </div>
     </div>
   </section>
 
-  <!-- Feature 2: Alumni Mentorship -->
-  <section class="feature-row">
-    <div class="row align-items-center g-5">
-      <div class="col-lg-6">
-        <img src="{% static 'images/landing3.jpg' %}" alt="Students working together" class="feature-image">
-      </div>
-      <div class="col-lg-6">
-        <div class="feature-icon-box icon-warning">
-          <i class="bi bi-people-fill"></i>
+  <!-- FEATURE 2 — Alumni Mentorship -->
+  <section class="feature-row" style="background:#f8fafc;">
+    <div class="container">
+      <div class="row align-items-center g-5">
+        <div class="col-lg-6" data-scroll="fade-right">
+          <img src="{% static 'images/landing3.jpg' %}" alt="Students collaborating with alumni" class="feature-image">
         </div>
-        <h2 class="feature-title">Real Alumni Mentorship.</h2>
-        <p class="feature-text">
-          Connect directly with seniors who have already cracked the code. Read their industry insights, request 1:1 mentorship sessions, and build a professional network that goes beyond the classroom walls.
-        </p>
-        <ul class="list-unstyled fs-6" style="color: var(--cc-text-muted);">
-          <li class="mb-2"><i class="bi bi-check2-circle text-warning me-2"></i> Verified alumni profiles</li>
-          <li class="mb-2"><i class="bi bi-check2-circle text-warning me-2"></i> Direct messaging & guidance</li>
-          <li><i class="bi bi-check2-circle text-warning me-2"></i> Real-world interview strategies</li>
-        </ul>
+        <div class="col-lg-6" data-scroll="fade-left">
+          <div class="feature-icon-box icon-amber">
+            <i class="bi bi-people-fill"></i>
+          </div>
+          <h2 class="feature-title">Real Alumni<br>Mentorship.</h2>
+          <p class="feature-text">
+            Connect directly with seniors who have already cracked the code. Read their industry insights, request 1:1 mentorship sessions, and build a professional network that goes beyond the classroom walls.
+          </p>
+          <ul class="list-unstyled feature-check">
+            <li><i class="bi bi-check2-circle" style="color:#d97706"></i> Verified alumni profiles from top companies</li>
+            <li><i class="bi bi-check2-circle" style="color:#d97706"></i> Direct messaging &amp; personalised guidance</li>
+            <li><i class="bi bi-check2-circle" style="color:#d97706"></i> Real-world interview strategies that work</li>
+          </ul>
+          <a href="{% url 'alumni:directory' %}" class="btn btn-hero mt-4 d-inline-flex align-items-center gap-2" style="background:linear-gradient(135deg,#d97706,#f59e0b);color:white;border:none;" id="feat-alumni-btn">
+            <i class="bi bi-people-fill"></i> Browse Alumni Network
+          </a>
+        </div>
       </div>
     </div>
   </section>
 
-  <!-- Feature 3: Placements -->
+  <!-- FEATURE 3 — Placements -->
   <section class="feature-row">
-    <div class="row align-items-center g-5">
-      <div class="col-lg-6 order-2 order-lg-1">
-        <div class="feature-icon-box icon-success">
-          <i class="bi bi-briefcase-fill"></i>
+    <div class="container">
+      <div class="row align-items-center g-5">
+        <div class="col-lg-6 order-2 order-lg-1" data-scroll="fade-right">
+          <div class="feature-icon-box icon-green">
+            <i class="bi bi-briefcase-fill"></i>
+          </div>
+          <h2 class="feature-title">Track Campus<br>Drives.</h2>
+          <p class="feature-text">
+            Never miss an important deadline. View real-time campus placement opportunities, filter jobs based on your actual CGPA and branch eligibility, and track your active applications — all in one unified dashboard.
+          </p>
+          <ul class="list-unstyled feature-check">
+            <li><i class="bi bi-check2-circle" style="color:#16a34a"></i> Real-time placement drive listings</li>
+            <li><i class="bi bi-check2-circle" style="color:#16a34a"></i> Filter by CGPA, branch &amp; package</li>
+            <li><i class="bi bi-check2-circle" style="color:#16a34a"></i> Deadline calendar so you never miss a drive</li>
+          </ul>
+          <a href="{% url 'accounts:register_student' %}" class="btn btn-hero mt-4 d-inline-flex align-items-center gap-2" style="background:linear-gradient(135deg,#16a34a,#4ade80);color:white;border:none;" id="feat-placements-btn">
+            <i class="bi bi-briefcase-fill"></i> View Opportunities
+          </a>
         </div>
-        <h2 class="feature-title">Track Campus Drives.</h2>
-        <p class="feature-text">
-          Never miss an important deadline. View real-time campus placement opportunities, filter jobs based on your actual CGPA and branch eligibility, and track your active applications all in one unified dashboard.
-        </p>
-        <a href="{% url 'accounts:register_student' %}" class="btn btn-outline-primary mt-3 px-4 py-2 rounded-pill">View Opportunities <i class="bi bi-arrow-right ms-1"></i></a>
-      </div>
-      <div class="col-lg-6 order-1 order-lg-2">
-        <img src="{% static 'images/landing1.jpg' %}" alt="Campus study room" class="feature-image">
+        <div class="col-lg-6 order-1 order-lg-2" data-scroll="fade-left">
+          <img src="{% static 'images/landing1.jpg' %}" alt="Campus study environment" class="feature-image">
+        </div>
       </div>
     </div>
   </section>
-
 </div>
 
-<!-- CTA SECTION -->
-<section class="cta-section text-center">
-  <div class="container position-relative z-1">
-    <h2 class="fw-bold mb-3" style="font-size: 3.5rem; color: #fff;">Ready to accelerate your career?</h2>
-    <p class="fs-5 mb-5 mx-auto" style="color: #cbd5e1; max-width: 600px;">
-      Join the exclusive network of campus students and industry alumni today. Be part of a real community driven by success.
-    </p>
-    {% if not user.is_authenticated %}
-      <a href="{% url 'accounts:register_student' %}" class="btn btn-hero btn-hero-primary px-5 py-3 fs-5 me-3">Create Free Account</a>
-      <a href="{% url 'accounts:login' %}" class="btn btn-hero btn-hero-outline px-5 py-3 fs-5">Log In</a>
-    {% else %}
-      <a href="{% url 'dashboard:feed' %}" class="btn btn-hero btn-hero-primary px-5 py-3 fs-5">Go to your Dashboard</a>
-    {% endif %}
+
+<!-- ================================================
+     TESTIMONIALS
+     ================================================ -->
+<section class="testi-section" id="testimonials">
+  <div class="container">
+    <div class="text-center mb-5" data-scroll="fade-up">
+      <span class="sec-eyebrow">Student Stories</span>
+      <h2 class="sec-title mt-2">Real Students.<br>Real Results.</h2>
+      <p class="sec-sub mx-auto mt-3">Here's what students and alumni are saying about CampusConnect.</p>
+    </div>
+
+    <div class="row g-4 mb-4" data-scroll-group>
+      <div class="col-md-6 col-lg-4">
+        <div class="testi-card">
+          <div class="testi-stars">★★★★★</div>
+          <p class="testi-quote">"The AI resume analyser bumped my ATS score from 52 to 89. That one change got me shortlisted for Google — couldn't believe it!"</p>
+          <div class="testi-author">
+            <div class="testi-av ta-1">R</div>
+            <div>
+              <div class="testi-name">Rahul Sharma</div>
+              <div class="testi-meta">CSE '25 · Google SWE — 24 LPA</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6 col-lg-4">
+        <div class="testi-card">
+          <div class="testi-stars">★★★★★</div>
+          <p class="testi-quote">"I connected with a Microsoft senior through the alumni directory. He mentored me for 3 months and referred me directly. Dream come true!"</p>
+          <div class="testi-author">
+            <div class="testi-av ta-2">P</div>
+            <div>
+              <div class="testi-name">Priya Mehta</div>
+              <div class="testi-meta">IT '25 · Microsoft SDE-1 — 20 LPA</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6 col-lg-4">
+        <div class="testi-card">
+          <div class="testi-stars">★★★★★</div>
+          <p class="testi-quote">"The placement calendar kept me on top of every deadline. I applied to 12 companies and got 5 interview calls in a single week!"</p>
+          <div class="testi-author">
+            <div class="testi-av ta-3">A</div>
+            <div>
+              <div class="testi-name">Aryan Kapoor</div>
+              <div class="testi-meta">ECE '25 · Amazon SDE — 18 LPA</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row g-4" data-scroll-group>
+      <div class="col-md-6 col-lg-4">
+        <div class="testi-card">
+          <div class="testi-stars">★★★★★</div>
+          <p class="testi-quote">"As an alumna, I love giving back. I've mentored 6 juniors this year and it takes barely 30 minutes a week — the platform makes it seamless."</p>
+          <div class="testi-author">
+            <div class="testi-av ta-4">N</div>
+            <div>
+              <div class="testi-name">Neha Gupta</div>
+              <div class="testi-meta">Alumni · Zomato PM — 28 LPA</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6 col-lg-4">
+        <div class="testi-card">
+          <div class="testi-stars">★★★★★</div>
+          <p class="testi-quote">"The Live Feed is gold — alumni post real interview questions and insights. I cracked my DSA rounds because of tips from seniors on this platform!"</p>
+          <div class="testi-author">
+            <div class="testi-av ta-5">S</div>
+            <div>
+              <div class="testi-name">Shivam Yadav</div>
+              <div class="testi-meta">CSE '25 · Swiggy SDE — 16 LPA</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6 col-lg-4">
+        <div class="testi-card">
+          <div class="testi-stars">★★★★★</div>
+          <p class="testi-quote">"From zero network to offer letter in 60 days. The alumni directory + AI resume tools together are just unbeatable. 10/10 recommend!"</p>
+          <div class="testi-author">
+            <div class="testi-av ta-6">D</div>
+            <div>
+              <div class="testi-name">Deepika Rawat</div>
+              <div class="testi-meta">MBA '25 · Infosys BPM — 9 LPA</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </section>
+
+
+<!-- ================================================
+     CTA SECTION
+     ================================================ -->
+<section class="cta-section text-center" id="join-now" data-scroll="fade-scale">
+  <div class="container position-relative" style="z-index:1;">
+    <span class="sec-eyebrow sec-eyebrow-dark">Ready to Launch?</span>
+    <h2 class="fw-bold mt-3" style="font-size: clamp(2rem,5vw,3.5rem); color: #fff;">
+      Ready to accelerate<br>your career?
+    </h2>
+    <p class="fs-5 mt-3 mb-4 mx-auto" style="color: #cbd5e1; max-width: 580px;">
+      Join the exclusive network of campus students and industry alumni. Be part of a community driven purely by success.
+    </p>
+    <!-- Feature chips -->
+    <div class="cta-chips justify-content-center">
+      <span class="cta-chip"><i class="bi bi-check-circle-fill"></i> Free forever for students</span>
+      <span class="cta-chip"><i class="bi bi-check-circle-fill"></i> AI resume analysis</span>
+      <span class="cta-chip"><i class="bi bi-check-circle-fill"></i> Verified alumni network</span>
+      <span class="cta-chip"><i class="bi bi-check-circle-fill"></i> Live placement drives</span>
+    </div>
+    <div class="d-flex flex-wrap gap-3 justify-content-center mt-5">
+      {% if not user.is_authenticated %}
+        <a href="{% url 'accounts:register_student' %}" class="btn btn-hero btn-hero-primary px-5 py-3 fs-5" id="cta-student-btn">
+          <i class="bi bi-person-plus-fill me-2"></i>Create Free Account
+        </a>
+        <a href="{% url 'accounts:login' %}" class="btn btn-hero btn-hero-outline px-5 py-3 fs-5" id="cta-login-btn">
+          Log In
+        </a>
+      {% else %}
+        <a href="{% url 'dashboard:feed' %}" class="btn btn-hero btn-hero-primary px-5 py-3 fs-5" id="cta-dashboard-btn">
+          <i class="bi bi-grid-fill me-2"></i>Go to your Dashboard
+        </a>
+      {% endif %}
+    </div>
+  </div>
+</section>
+
+{% endblock %}
+
+
+{% block extra_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+
+  /* ── 1. HERO LOAD REVEAL ─────────────────── */
+  const heroReveal = document.getElementById('hero-reveal');
+  if (heroReveal) {
+    setTimeout(function () {
+      heroReveal.style.opacity = '1';
+      heroReveal.style.transform = 'translateY(0)';
+    }, 80);
+  }
+
+  /* ── 2. TYPEWRITER ───────────────────────── */
+  const twEl = document.getElementById('tw-text');
+  if (twEl) {
+    const words = (twEl.dataset.words || '').split('|');
+    let wi = 0, ci = 0, del = false;
+    function type() {
+      const cur = words[wi] || '';
+      twEl.textContent = del ? cur.slice(0, ci--) : cur.slice(0, ci++);
+      let d = del ? 60 : 110;
+      if (!del && ci > cur.length) { d = 1800; del = true; }
+      else if (del && ci < 0)      { del = false; wi = (wi+1)%words.length; ci = 0; d = 400; }
+      setTimeout(type, d);
+    }
+    setTimeout(type, 900);
+  }
+
+  /* ── 3. PARTICLE CANVAS ──────────────────── */
+  const canvas = document.getElementById('lp-particles');
+  if (canvas) {
+    const ctx = canvas.getContext('2d');
+    let W, H;
+    function resize() {
+      W = canvas.width  = canvas.offsetWidth;
+      H = canvas.height = canvas.offsetHeight;
+    }
+    window.addEventListener('resize', resize); resize();
+    const pts = Array.from({length:42}, function() { return {
+      x: Math.random()*(W||1200), y: Math.random()*(H||700),
+      r: Math.random()*2+0.5,
+      vx: (Math.random()-0.5)*0.3, vy: (Math.random()-0.5)*0.3,
+      a: Math.random()*0.35+0.1
+    }; });
+    function draw() {
+      ctx.clearRect(0,0,W,H);
+      pts.forEach(function(p) {
+        ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+        ctx.fillStyle = 'rgba(129,140,248,'+p.a+')'; ctx.fill();
+        pts.forEach(function(q) {
+          const d = Math.hypot(p.x-q.x, p.y-q.y);
+          if (d < 100) {
+            ctx.beginPath(); ctx.moveTo(p.x,p.y); ctx.lineTo(q.x,q.y);
+            ctx.strokeStyle = 'rgba(99,102,241,'+(0.06*(1-d/100))+')';
+            ctx.lineWidth = 0.8; ctx.stroke();
+          }
+        });
+        p.x+=p.vx; p.y+=p.vy;
+        if(p.x<0||p.x>W) p.vx*=-1;
+        if(p.y<0||p.y>H) p.vy*=-1;
+      });
+      requestAnimationFrame(draw);
+    }
+    draw();
+  }
+
+  /* ── 4. SCROLL-TRIGGER OBSERVER ─────────── */
+  const scrollObs = new IntersectionObserver(function(entries) {
+    entries.forEach(function(entry) {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('is-visible');
+        /* trigger counters inside the revealed element */
+        entry.target.querySelectorAll('[data-count]').forEach(animateCount);
+        scrollObs.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+
+  document.querySelectorAll('[data-scroll],[data-scroll-group]').forEach(function(el) {
+    scrollObs.observe(el);
+  });
+
+  /* ── 5. COUNTER ANIMATION ────────────────── */
+  function animateCount(el) {
+    const target = parseFloat(el.dataset.count);
+    const suffix = el.dataset.suffix || '';
+    const dur = 1800;
+    const t0 = performance.now();
+    function step(now) {
+      const p = Math.min((now-t0)/dur, 1);
+      const ease = 1 - Math.pow(1-p, 3);
+      el.textContent = Math.round(ease*target) + suffix;
+      if (p < 1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  }
+
+  /* Fire counters already in view (stats section at top) */
+  document.querySelectorAll('[data-count]').forEach(function(el) {
+    if (el.getBoundingClientRect().top < window.innerHeight) animateCount(el);
+  });
+
+  /* ── 6. NAVBAR SHRINK ────────────────────── */
+  const nav = document.querySelector('.cc-navbar');
+  window.addEventListener('scroll', function() {
+    if (nav) nav.style.boxShadow = window.scrollY > 60
+      ? '0 4px 24px rgba(0,0,0,0.15)' : '';
+  }, { passive:true });
+
+  /* ── 7. RESUME SCORE BARS ────────────────── */
+  const fills = document.querySelectorAll('.section-score-fill');
+  if (fills.length) {
+    const obs2 = new IntersectionObserver(function(entries) {
+      entries.forEach(function(e) {
+        if (e.isIntersecting)
+          e.target.style.width = e.target.getAttribute('data-width') || e.target.style.width;
+      });
+    });
+    fills.forEach(function(el) {
+      el.setAttribute('data-width', el.style.width);
+      el.style.width = '0';
+      setTimeout(function() { obs2.observe(el); }, 100);
+    });
+  }
+
+  /* ── 8. DEADLINE LABELS ──────────────────── */
+  document.querySelectorAll('[data-deadline]').forEach(function(el) {
+    const diff = Math.ceil((new Date(el.dataset.deadline) - new Date()) / 86400000);
+    if      (diff < 0)  { el.style.color='#ef4444'; el.title='Deadline passed'; }
+    else if (diff === 0){ el.style.color='#ef4444'; el.textContent='Today!'; }
+    else if (diff <= 3) { el.style.color='#f97316'; el.textContent+=` (${diff}d left)`; }
+    else if (diff <= 7) { el.style.color='#f59e0b'; el.textContent+=` (${diff}d left)`; }
+  });
+
+  /* ── 9. TOAST AUTO-DISMISS ───────────────── */
+  document.querySelectorAll('.toast').forEach(function(el) {
+    setTimeout(function() { bootstrap.Toast.getOrCreateInstance(el).hide(); }, 5000);
+  });
+
+});
+</script>
 {% endblock %}

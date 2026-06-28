@@ -1,129 +1,525 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}CampusConnect — Student Networking & Placement Platform{% endblock %}
+{% block title %}CampusConnect — Student Networking &amp; Placement Platform{% endblock %}
+{% block meta_description %}CampusConnect connects college students with alumni, tracks placements, provides AI-powered resume analysis, and mentorship — all in one platform.{% endblock %}
 
 {% block content %}
-<!-- HERO SECTION -->
-<section class="hero-section">
-  <div class="container py-5">
-    <div class="row align-items-center g-5">
-      <div class="col-lg-6">
-        <div class="badge cc-badge mb-3"><i class="bi bi-stars me-1"></i>AI-Powered Resume Analyzer</div>
-        <h1 class="display-4 fw-bold mb-4 lh-sm">
-          Your <span class="text-gradient">Campus Career</span><br>Starts Here
-        </h1>
-        <p class="lead text-muted mb-4">
-          Connect with alumni, track placements, get mentored, and let AI supercharge your resume — all in one platform built for college students.
-        </p>
-        <div class="d-flex flex-wrap gap-3">
-          {% if user.is_authenticated %}
-          <a href="{% url 'dashboard:feed' %}" class="btn btn-primary btn-lg px-4">
-            <i class="bi bi-grid-fill me-2"></i>Go to Dashboard
-          </a>
-          <a href="{% url 'resume_analyzer:upload' %}" class="btn btn-outline-primary btn-lg px-4">
-            <i class="bi bi-robot me-2"></i>Analyze Resume
-          </a>
-          {% else %}
-          <a href="{% url 'accounts:register_student' %}" class="btn btn-primary btn-lg px-4">
-            <i class="bi bi-person-plus-fill me-2"></i>Join as Student
-          </a>
-          <a href="{% url 'accounts:register_alumni' %}" class="btn btn-outline-primary btn-lg px-4">
-            <i class="bi bi-award me-2"></i>Join as Alumni
-          </a>
-          {% endif %}
-        </div>
-        <!-- Stats row -->
-        <div class="row g-3 mt-4">
-          <div class="col-4 text-center">
-            <div class="stat-number">500+</div>
-            <div class="stat-label">Students</div>
-          </div>
-          <div class="col-4 text-center">
-            <div class="stat-number">200+</div>
-            <div class="stat-label">Alumni</div>
-          </div>
-          <div class="col-4 text-center">
-            <div class="stat-number">50+</div>
-            <div class="stat-label">Placements</div>
-          </div>
-        </div>
-      </div>
-      <div class="col-lg-6 d-none d-lg-block">
-        <div class="hero-illustration">
-          <div class="floating-card card-1">
-            <i class="bi bi-briefcase-fill text-primary me-2"></i>
-            <span>Google SWE — 24 LPA</span>
-          </div>
-          <div class="floating-card card-2">
-            <i class="bi bi-robot text-success me-2"></i>
-            <span>ATS Score: 87/100</span>
-          </div>
-          <div class="floating-card card-3">
-            <i class="bi bi-chat-heart-fill text-warning me-2"></i>
-            <span>Mentorship Connected!</span>
-          </div>
-          <div class="hero-avatar-grid">
-            <div class="avatar-bubble" style="background: var(--bs-primary)">S</div>
-            <div class="avatar-bubble" style="background: #22c55e">A</div>
-            <div class="avatar-bubble" style="background: #f59e0b">P</div>
-            <div class="avatar-bubble" style="background: #8b5cf6">R</div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
 
-<!-- FEATURES SECTION -->
-<section class="features-section py-5">
+<!-- =====================================================
+     HERO SECTION
+     ===================================================== -->
+<section class="hero-section">
+  <!-- Background orbs -->
+  <div class="hero-orb hero-orb-1"></div>
+  <div class="hero-orb hero-orb-2"></div>
+  <div class="hero-orb hero-orb-3"></div>
+  <!-- Particle canvas -->
+  <canvas id="hero-particles"></canvas>
+
   <div class="container">
-    <div class="text-center mb-5">
-      <h2 class="fw-bold">Everything You Need to Launch Your Career</h2>
-      <p class="text-muted">From placements to mentorship — we've got you covered.</p>
+    <div class="row align-items-center g-5">
+
+      <!-- LEFT: TEXT CONTENT -->
+      <div class="col-lg-6">
+        <!-- Hero content with load reveal -->
+        <div class="hero-reveal" style="opacity:0; transform:translateY(30px); transition: opacity 0.9s cubic-bezier(0.22,1,0.36,1), transform 0.9s cubic-bezier(0.22,1,0.36,1);">
+
+          <!-- Eyebrow badge -->
+          <div class="hero-eyebrow mb-4">
+            <span class="dot"></span>
+            AI-Powered Campus Career Platform
+          </div>
+
+          <!-- Headline with typewriter -->
+          <h1 class="display-4 fw-bold lh-sm mb-4">
+            Your
+            <span class="headline-gradient">
+              <span class="typewriter-wrap">
+                <span id="typewriter-text" data-words="Campus Career|Resume Score|Alumni Network|Dream Placement"></span><span class="typewriter-cursor"></span>
+              </span>
+            </span><br>
+            Starts <span class="text-gradient">Here</span>
+          </h1>
+
+          <!-- Sub-copy -->
+          <p class="lead mb-4" style="color: var(--cc-text-muted); max-width: 480px; line-height: 1.7;">
+            Connect with alumni, track placements, get mentored, and let AI supercharge your resume — all in one platform built for college students.
+          </p>
+
+          <!-- CTA Buttons -->
+          <div class="hero-cta-group mb-3">
+            {% if user.is_authenticated %}
+              <a href="{% url 'dashboard:feed' %}" class="btn-hero-primary" id="hero-dashboard-btn">
+                <i class="bi bi-grid-fill me-2"></i>Go to Dashboard
+              </a>
+              <a href="{% url 'resume_analyzer:upload' %}" class="btn-hero-outline" id="hero-resume-btn">
+                <i class="bi bi-robot me-2"></i>Analyze Resume
+              </a>
+            {% else %}
+              <a href="{% url 'accounts:register_student' %}" class="btn-hero-primary" id="hero-student-btn">
+                <i class="bi bi-person-plus-fill me-2"></i>Join as Student
+              </a>
+              <a href="{% url 'accounts:register_alumni' %}" class="btn-hero-outline" id="hero-alumni-btn">
+                <i class="bi bi-award me-2"></i>Join as Alumni
+              </a>
+            {% endif %}
+          </div>
+
+          <!-- Trust line -->
+          <p class="small mb-0" style="color: var(--cc-text-muted);">
+            <i class="bi bi-shield-check-fill me-1" style="color: var(--cc-primary);"></i>
+            Free forever for students &nbsp;·&nbsp; No credit card needed
+          </p>
+
+          <!-- Stats row -->
+          <div class="hero-stats mt-3">
+            <div class="hero-stat-item">
+              <span class="hero-stat-num" data-count="500" data-suffix="+">500+</span>
+              <span class="hero-stat-label">Students</span>
+            </div>
+            <div class="hero-stat-divider"></div>
+            <div class="hero-stat-item">
+              <span class="hero-stat-num" data-count="200" data-suffix="+">200+</span>
+              <span class="hero-stat-label">Alumni</span>
+            </div>
+            <div class="hero-stat-divider"></div>
+            <div class="hero-stat-item">
+              <span class="hero-stat-num" data-count="50" data-suffix="+">50+</span>
+              <span class="hero-stat-label">Placements</span>
+            </div>
+            <div class="hero-stat-divider"></div>
+            <div class="hero-stat-item">
+              <span class="hero-stat-num" data-count="87" data-suffix="/100">87/100</span>
+              <span class="hero-stat-label">Avg ATS Score</span>
+            </div>
+          </div>
+
+        </div><!-- /hero-reveal -->
+      </div><!-- /col -->
+
+      <!-- RIGHT: VISUAL ILLUSTRATION -->
+      <div class="col-lg-6 d-none d-lg-block">
+        <div class="hero-visual">
+          <!-- Orbit rings -->
+          <div class="orbit-ring ring-1"></div>
+          <div class="orbit-ring ring-2"></div>
+
+          <!-- Central card -->
+          <div class="hero-central-card">
+            <div class="big-icon">
+              <i class="bi bi-mortarboard-fill"></i>
+            </div>
+            <div class="cc-label">CampusConnect</div>
+            <div class="cc-sub mt-1">Your career hub</div>
+          </div>
+
+          <!-- Floating notification cards -->
+          <div class="floating-card card-1" id="fc-placement">
+            <span class="fc-icon fc-brown"><i class="bi bi-briefcase-fill"></i></span>
+            Google SWE — 24 LPA 🎉
+          </div>
+          <div class="floating-card card-2" id="fc-ats">
+            <span class="fc-icon fc-green"><i class="bi bi-robot"></i></span>
+            ATS Score: 87/100 ✓
+          </div>
+          <div class="floating-card card-3" id="fc-mentor">
+            <span class="fc-icon fc-amber"><i class="bi bi-chat-heart-fill"></i></span>
+            Mentorship Connected!
+          </div>
+          <div class="floating-card card-4" id="fc-notif">
+            <span class="fc-icon fc-purple"><i class="bi bi-bell-fill"></i></span>
+            New drive: Microsoft
+          </div>
+        </div>
+      </div>
+
     </div>
-    <div class="row g-4">
-      <div class="col-md-6 col-lg-3">
-        <div class="feature-card h-100">
-          <div class="feature-icon">
-            <i class="bi bi-briefcase-fill fs-3"></i>
-          </div>
-          <h5 class="fw-semibold mt-3">Placement Tracker</h5>
-          <p class="text-muted small">Browse and apply to internships and full-time roles. Track deadlines with a calendar view.</p>
-          <a href="{% url 'placements:list' %}" class="btn btn-sm btn-outline-primary mt-auto">Explore →</a>
+  </div>
+</section><!-- /hero -->
+
+
+<!-- =====================================================
+     MARQUEE — COMPANY LOGOS STRIP
+     ===================================================== -->
+<div class="marquee-section" aria-label="Companies hiring from CampusConnect">
+  <div class="marquee-track" id="marquee-track">
+    <!-- Set 1 -->
+    <span class="marquee-item"><i class="bi bi-google me-1" style="color:#4285F4"></i>Google</span>
+    <span class="marquee-item"><i class="bi bi-microsoft me-1" style="color:#00BCF2"></i>Microsoft</span>
+    <span class="marquee-item"><i class="bi bi-amazon me-1" style="color:#FF9900"></i>Amazon</span>
+    <span class="marquee-item"><i class="bi bi-meta me-1" style="color:#1877F2"></i>Meta</span>
+    <span class="marquee-item"><i class="bi bi-apple me-1"></i>Apple</span>
+    <span class="marquee-item"><i class="bi bi-building me-1" style="color:#0057e7"></i>Infosys</span>
+    <span class="marquee-item"><i class="bi bi-building me-1" style="color:#8d5524"></i>TCS</span>
+    <span class="marquee-item"><i class="bi bi-building me-1" style="color:#e87722"></i>Wipro</span>
+    <span class="marquee-item"><i class="bi bi-building me-1" style="color:#D90429"></i>Swiggy</span>
+    <span class="marquee-item"><i class="bi bi-building me-1" style="color:#FC5200"></i>Zomato</span>
+    <!-- Set 2 (duplicate for seamless loop) -->
+    <span class="marquee-item"><i class="bi bi-google me-1" style="color:#4285F4"></i>Google</span>
+    <span class="marquee-item"><i class="bi bi-microsoft me-1" style="color:#00BCF2"></i>Microsoft</span>
+    <span class="marquee-item"><i class="bi bi-amazon me-1" style="color:#FF9900"></i>Amazon</span>
+    <span class="marquee-item"><i class="bi bi-meta me-1" style="color:#1877F2"></i>Meta</span>
+    <span class="marquee-item"><i class="bi bi-apple me-1"></i>Apple</span>
+    <span class="marquee-item"><i class="bi bi-building me-1" style="color:#0057e7"></i>Infosys</span>
+    <span class="marquee-item"><i class="bi bi-building me-1" style="color:#8d5524"></i>TCS</span>
+    <span class="marquee-item"><i class="bi bi-building me-1" style="color:#e87722"></i>Wipro</span>
+    <span class="marquee-item"><i class="bi bi-building me-1" style="color:#D90429"></i>Swiggy</span>
+    <span class="marquee-item"><i class="bi bi-building me-1" style="color:#FC5200"></i>Zomato</span>
+  </div>
+</div>
+
+
+<!-- =====================================================
+     HOW IT WORKS
+     ===================================================== -->
+<section class="how-section" id="how-it-works">
+  <div class="container">
+
+    <!-- Section header -->
+    <div class="text-center mb-5" data-scroll="fade-up">
+      <span class="section-eyebrow">How It Works</span>
+      <h2 class="section-title mt-2">From Sign-Up to Dream Job<br>in 4 Simple Steps</h2>
+      <p class="section-subtitle mx-auto mt-3">
+        CampusConnect is designed to get you hired faster — here's how it works.
+      </p>
+    </div>
+
+    <!-- Steps row -->
+    <div class="row g-4 align-items-start">
+
+      <div class="col-lg-3 col-md-6" data-scroll="fade-up" data-delay="100">
+        <div class="step-card h-100">
+          <div class="step-num-badge">1</div>
+          <h5>Create Your Profile</h5>
+          <p>Sign up as a student or alumni. Fill in your skills, experiences, and career goals in minutes.</p>
         </div>
       </div>
-      <div class="col-md-6 col-lg-3">
-        <div class="feature-card h-100">
-          <div class="feature-icon" style="background: rgba(34,197,94,0.15); color: #4ade80">
-            <i class="bi bi-people-fill fs-3"></i>
-          </div>
-          <h5 class="fw-semibold mt-3">Alumni Network</h5>
-          <p class="text-muted small">Connect with graduates at top companies. Request mentorship and get career guidance.</p>
-          <a href="{% url 'alumni:directory' %}" class="btn btn-sm btn-outline-success mt-auto">Explore →</a>
+
+      <div class="col-lg-auto d-none d-lg-flex step-connector" data-scroll="fade" data-delay="150">
+        <i class="bi bi-arrow-right-circle-fill"></i>
+      </div>
+
+      <div class="col-lg-3 col-md-6" data-scroll="fade-up" data-delay="200">
+        <div class="step-card h-100">
+          <div class="step-num-badge">2</div>
+          <h5>Upload Your Resume</h5>
+          <p>Let our AI engine analyse your resume, calculate an ATS score, and give detailed keyword suggestions.</p>
         </div>
       </div>
-      <div class="col-md-6 col-lg-3">
-        <div class="feature-card h-100">
-          <div class="feature-icon" style="background: rgba(245,158,11,0.15); color: #fbbf24">
-            <i class="bi bi-robot fs-3"></i>
-          </div>
-          <h5 class="fw-semibold mt-3">AI Resume Bot</h5>
-          <p class="text-muted small">Get ATS score, section-by-section analysis and keyword suggestions powered by GenAI.</p>
-          <a href="{% url 'resume_analyzer:upload' %}" class="btn btn-sm btn-outline-warning mt-auto">Analyze →</a>
+
+      <div class="col-lg-auto d-none d-lg-flex step-connector" data-scroll="fade" data-delay="250">
+        <i class="bi bi-arrow-right-circle-fill"></i>
+      </div>
+
+      <div class="col-lg-3 col-md-6" data-scroll="fade-up" data-delay="300">
+        <div class="step-card h-100">
+          <div class="step-num-badge">3</div>
+          <h5>Connect with Alumni</h5>
+          <p>Browse alumni working at top companies. Send mentorship requests and get personalised career guidance.</p>
         </div>
       </div>
+
+      <div class="col-lg-auto d-none d-lg-flex step-connector" data-scroll="fade" data-delay="350">
+        <i class="bi bi-arrow-right-circle-fill"></i>
+      </div>
+
+      <div class="col-lg-3 col-md-6" data-scroll="fade-up" data-delay="400">
+        <div class="step-card h-100">
+          <div class="step-num-badge">4</div>
+          <h5>Track & Apply</h5>
+          <p>Browse open placement drives, apply directly, and track every application through your dashboard.</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section><!-- /how it works -->
+
+
+<!-- =====================================================
+     FEATURES SECTION
+     ===================================================== -->
+<section class="features-section" id="features">
+  <div class="container">
+
+    <!-- Section header -->
+    <div class="text-center mb-5" data-scroll="fade-up">
+      <span class="section-eyebrow">Platform Features</span>
+      <h2 class="section-title mt-2">Everything You Need to<br>Launch Your Career</h2>
+      <p class="section-subtitle mx-auto mt-3">
+        From placements to mentorship — built specifically for college students.
+      </p>
+    </div>
+
+    <!-- Feature cards -->
+    <div class="row g-4" data-scroll-group>
+
+      <!-- Placement Tracker -->
       <div class="col-md-6 col-lg-3">
         <div class="feature-card h-100">
-          <div class="feature-icon" style="background: rgba(239,68,68,0.15); color: #f87171">
-            <i class="bi bi-newspaper fs-3"></i>
+          <span class="feature-tag" style="background:rgba(141,85,36,0.08); color:var(--cc-primary);">Most Used</span>
+          <div class="feature-icon mb-3">
+            <i class="bi bi-briefcase-fill"></i>
           </div>
-          <h5 class="fw-semibold mt-3">Live Feed</h5>
-          <p class="text-muted small">Stay updated with alumni insights, placement results, and industry trends in real time.</p>
-          <a href="{% url 'dashboard:feed' %}" class="btn btn-sm btn-outline-danger mt-auto">View Feed →</a>
+          <h5 class="fw-bold">Placement Tracker</h5>
+          <p class="text-muted small flex-grow-1">Browse and apply to internships and full-time roles. Track application statuses and deadlines with a live calendar.</p>
+          <a href="{% url 'placements:list' %}" class="btn btn-sm btn-outline-primary mt-3" id="feature-placements-btn">
+            Explore Drives →
+          </a>
+        </div>
+      </div>
+
+      <!-- Alumni Network -->
+      <div class="col-md-6 col-lg-3">
+        <div class="feature-card h-100">
+          <span class="feature-tag" style="background:rgba(34,197,94,0.1); color:#16a34a;">Mentorship</span>
+          <div class="feature-icon mb-3" style="background:rgba(34,197,94,0.1); color:#4ade80;">
+            <i class="bi bi-people-fill"></i>
+          </div>
+          <h5 class="fw-bold">Alumni Network</h5>
+          <p class="text-muted small flex-grow-1">Connect with graduates at top companies. Send mentorship requests and receive personalised career guidance from real professionals.</p>
+          <a href="{% url 'alumni:directory' %}" class="btn btn-sm btn-outline-success mt-3" id="feature-alumni-btn">
+            Browse Alumni →
+          </a>
+        </div>
+      </div>
+
+      <!-- AI Resume Bot -->
+      <div class="col-md-6 col-lg-3">
+        <div class="feature-card h-100">
+          <span class="feature-tag" style="background:rgba(245,158,11,0.1); color:#d97706;">AI Powered</span>
+          <div class="feature-icon mb-3" style="background:rgba(245,158,11,0.12); color:#fbbf24;">
+            <i class="bi bi-robot"></i>
+          </div>
+          <h5 class="fw-bold">AI Resume Bot</h5>
+          <p class="text-muted small flex-grow-1">Get an ATS score, section-by-section analysis, and keyword suggestions powered by Gemini AI. Know exactly where to improve.</p>
+          <a href="{% url 'resume_analyzer:upload' %}" class="btn btn-sm btn-outline-warning mt-3" id="feature-resume-btn">
+            Analyze Now →
+          </a>
+        </div>
+      </div>
+
+      <!-- Live Feed -->
+      <div class="col-md-6 col-lg-3">
+        <div class="feature-card h-100">
+          <span class="feature-tag" style="background:rgba(239,68,68,0.1); color:#dc2626;">Live</span>
+          <div class="feature-icon mb-3" style="background:rgba(239,68,68,0.12); color:#f87171;">
+            <i class="bi bi-newspaper"></i>
+          </div>
+          <h5 class="fw-bold">Live Feed</h5>
+          <p class="text-muted small flex-grow-1">Stay updated with alumni insights, success stories, placement results, and industry trends — all in real time on your personalised feed.</p>
+          <a href="{% url 'dashboard:feed' %}" class="btn btn-sm btn-outline-danger mt-3" id="feature-feed-btn">
+            View Feed →
+          </a>
+        </div>
+      </div>
+
+    </div><!-- /row -->
+  </div>
+</section><!-- /features -->
+
+
+<!-- =====================================================
+     ANIMATED STATS SECTION
+     ===================================================== -->
+<section class="stats-section" id="platform-stats">
+  <div class="container">
+    <div class="row align-items-center justify-content-center g-4 text-center" data-scroll-group>
+
+      <div class="col-6 col-md-3">
+        <span class="stat-big-number" data-count="500" data-suffix="+">500+</span>
+        <span class="stat-big-label mt-1 d-block">Active Students</span>
+      </div>
+
+      <div class="col-auto stat-divider-v d-none d-md-block"></div>
+
+      <div class="col-6 col-md-3">
+        <span class="stat-big-number" data-count="200" data-suffix="+">200+</span>
+        <span class="stat-big-label mt-1 d-block">Alumni Mentors</span>
+      </div>
+
+      <div class="col-auto stat-divider-v d-none d-md-block"></div>
+
+      <div class="col-6 col-md-3">
+        <span class="stat-big-number" data-count="50" data-suffix="+">50+</span>
+        <span class="stat-big-label mt-1 d-block">Successful Placements</span>
+      </div>
+
+      <div class="col-auto stat-divider-v d-none d-md-block"></div>
+
+      <div class="col-6 col-md-3">
+        <span class="stat-big-number" data-count="87" data-suffix="%">87%</span>
+        <span class="stat-big-label mt-1 d-block">Resume Improvement Rate</span>
+      </div>
+
+    </div>
+  </div>
+</section><!-- /stats -->
+
+
+<!-- =====================================================
+     TESTIMONIALS
+     ===================================================== -->
+<section class="testimonials-section" id="testimonials">
+  <div class="container">
+
+    <!-- Section header -->
+    <div class="text-center mb-5" data-scroll="fade-up">
+      <span class="section-eyebrow">Student Stories</span>
+      <h2 class="section-title mt-2">Loved by Students<br>Across Campus</h2>
+      <p class="section-subtitle mx-auto mt-3">
+        Real stories from students who landed their dream roles using CampusConnect.
+      </p>
+    </div>
+
+    <!-- Row 1 -->
+    <div class="row g-4 mb-4" data-scroll-group>
+
+      <div class="col-md-6 col-lg-4">
+        <div class="testimonial-card">
+          <div class="testimonial-stars">★★★★★</div>
+          <p class="testimonial-quote">"CampusConnect's AI resume analyser bumped my ATS score from 52 to 89. That one change got me shortlisted for Google!"</p>
+          <div class="testimonial-author">
+            <div class="testimonial-avatar t-av-1">R</div>
+            <div>
+              <div class="testimonial-name">Rahul Sharma</div>
+              <div class="testimonial-meta">CSE '25 · Google SWE — 24 LPA</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-6 col-lg-4">
+        <div class="testimonial-card">
+          <div class="testimonial-stars">★★★★★</div>
+          <p class="testimonial-quote">"I connected with a senior alumni at Microsoft through the directory. He mentored me for 3 months and referred me directly. Dream come true!"</p>
+          <div class="testimonial-author">
+            <div class="testimonial-avatar t-av-2">P</div>
+            <div>
+              <div class="testimonial-name">Priya Mehta</div>
+              <div class="testimonial-meta">IT '25 · Microsoft SDE-1 — 20 LPA</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-6 col-lg-4">
+        <div class="testimonial-card">
+          <div class="testimonial-stars">★★★★★</div>
+          <p class="testimonial-quote">"The placement tracker calendar kept me on top of every deadline. I applied to 12 companies and got 5 interview calls in one week!"</p>
+          <div class="testimonial-author">
+            <div class="testimonial-avatar t-av-3">A</div>
+            <div>
+              <div class="testimonial-name">Aryan Kapoor</div>
+              <div class="testimonial-meta">ECE '25 · Amazon SDE — 18 LPA</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /row 1 -->
+
+    <!-- Row 2 -->
+    <div class="row g-4" data-scroll-group>
+
+      <div class="col-md-6 col-lg-4">
+        <div class="testimonial-card">
+          <div class="testimonial-stars">★★★★★</div>
+          <p class="testimonial-quote">"As an alumni, I love being able to give back. I've mentored 6 juniors this year through the platform and it takes barely 30 minutes a week."</p>
+          <div class="testimonial-author">
+            <div class="testimonial-avatar t-av-4">N</div>
+            <div>
+              <div class="testimonial-name">Neha Gupta</div>
+              <div class="testimonial-meta">Alumni · Zomato PM — 28 LPA</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-6 col-lg-4">
+        <div class="testimonial-card">
+          <div class="testimonial-stars">★★★★★</div>
+          <p class="testimonial-quote">"The Live Feed is gold — alumni post real interview questions and company insights. I cracked my DSA rounds because of tips from seniors!"</p>
+          <div class="testimonial-author">
+            <div class="testimonial-avatar t-av-5">S</div>
+            <div>
+              <div class="testimonial-name">Shivam Yadav</div>
+              <div class="testimonial-meta">CSE '25 · Swiggy SDE — 16 LPA</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-6 col-lg-4">
+        <div class="testimonial-card">
+          <div class="testimonial-stars">★★★★★</div>
+          <p class="testimonial-quote">"From zero network to offer letter in 60 days — the alumni directory and AI resume tools together are just unbeatable. 10/10 recommend!"</p>
+          <div class="testimonial-author">
+            <div class="testimonial-avatar t-av-6">D</div>
+            <div>
+              <div class="testimonial-name">Deepika Rawat</div>
+              <div class="testimonial-meta">MBA '25 · Infosys BPM — 9 LPA</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /row 2 -->
+  </div>
+</section><!-- /testimonials -->
+
+
+<!-- =====================================================
+     CTA — FINAL JOIN SECTION
+     ===================================================== -->
+<section class="cta-section" id="join">
+  <div class="container">
+    <div class="cta-box" data-scroll="fade-scale">
+      <div class="cta-inner">
+        <div class="row align-items-center g-5">
+
+          <!-- Left text -->
+          <div class="col-lg-7">
+            <span class="section-eyebrow" style="background:rgba(255,255,255,0.1); border-color:rgba(255,255,255,0.15); color:rgba(255,255,255,0.9);">
+              Ready to Launch?
+            </span>
+            <h2 class="mt-3">Join 500+ Students Already Accelerating Their Careers</h2>
+            <p class="mt-2">
+              Sign up in 60 seconds. No credit card. No spam. Just your next big opportunity waiting.
+            </p>
+            <!-- Feature chips -->
+            <div class="cta-chips">
+              <span class="cta-chip"><i class="bi bi-check-circle-fill"></i> Free for Students</span>
+              <span class="cta-chip"><i class="bi bi-check-circle-fill"></i> AI Resume Analysis</span>
+              <span class="cta-chip"><i class="bi bi-check-circle-fill"></i> Real Alumni Network</span>
+              <span class="cta-chip"><i class="bi bi-check-circle-fill"></i> Live Placement Drives</span>
+            </div>
+          </div>
+
+          <!-- Right CTAs -->
+          <div class="col-lg-5 text-lg-end text-center">
+            {% if user.is_authenticated %}
+              <a href="{% url 'dashboard:feed' %}" class="btn-cta-white d-inline-flex align-items-center gap-2 mb-3" id="cta-dashboard-btn">
+                <i class="bi bi-grid-fill"></i> Go to Dashboard
+              </a><br>
+            {% else %}
+              <a href="{% url 'accounts:register_student' %}" class="btn-cta-white d-inline-flex align-items-center gap-2 mb-3" id="cta-student-btn">
+                <i class="bi bi-person-plus-fill"></i> Join as Student — Free
+              </a><br>
+              <a href="{% url 'accounts:register_alumni' %}" class="btn-cta-outline-white d-inline-flex align-items-center gap-2" id="cta-alumni-btn">
+                <i class="bi bi-award"></i> Join as Alumni
+              </a>
+            {% endif %}
+            <p class="mt-3 mb-0" style="color: rgba(255,255,255,0.45); font-size: 0.78rem;">
+              © 2026 CampusConnect · Built for students, by students.
+            </p>
+          </div>
+
         </div>
       </div>
     </div>
   </div>
-</section>
+</section><!-- /cta -->
+
 {% endblock %}
