@@ -7,6 +7,7 @@
 ![LangChain](https://img.shields.io/badge/LangChain-Structured_Output-1C3C3C?style=for-the-badge&logo=langchain&logoColor=white)
 ![DeepSeek](https://img.shields.io/badge/DeepSeek_R1-AI_Engine-FF6B6B?style=for-the-badge)
 ![Bootstrap](https://img.shields.io/badge/Bootstrap-5.3-7952B3?style=for-the-badge&logo=bootstrap&logoColor=white)
+![Email](https://img.shields.io/badge/Email-Notifications-D44638?style=for-the-badge&logo=gmail&logoColor=white)
 
 **A full-stack Django web application that connects students, alumni, and campus placement opportunities — powered by an AI Resume Analyzer using DeepSeek-R1 and LangChain Structured Outputs.**
 
@@ -45,6 +46,16 @@ The platform brings everything under one roof — a unified dashboard for placem
 - **Placement Calendar** — Visual calendar view of upcoming campus drive deadlines
 - **Admin Posting** — Admins and alumni can post new placement opportunities with company logos
 
+### 📧 Email Notification System
+- **Automatic Alerts** — Every registered student receives an email the moment a new placement or internship post goes live
+- **Zero Delay** — Notifications fire instantly via a Django `post_save` signal attached to `PlacementPost`
+- **Async Delivery** — Emails are dispatched in a background daemon thread using Python's `threading` module, so the web request is never blocked
+- **Bulk Sending** — Uses Django's `send_mass_mail` to open a single SMTP connection and deliver all emails efficiently in one batch
+- **Smart Targeting** — Only students with a registered email address receive notifications; no spam to users with missing emails
+- **Key Details Included** — Each email contains the company name, role title, and application deadline so students have everything at a glance
+- **Gmail SMTP Ready** — Pre-configured for Gmail SMTP with TLS; swap to any SMTP provider via `.env` variables
+- **Console Backend for Dev** — Emails print to the terminal in development (`EMAIL_BACKEND=console`) and switch to real SMTP in production
+
 ### 🤝 Alumni Network & Mentorship
 - **Alumni Directory** — Browse verified alumni profiles with their current company, role, and expertise
 - **Industry Insights** — Alumni share posts categorized by type (Career Tips, Interview Prep, Industry Trends)
@@ -82,6 +93,7 @@ The platform brings everything under one roof — a unified dashboard for placem
 | **File Parsing** | PyPDF2 (PDF), python-docx (DOCX) |
 | **Static Files** | WhiteNoise |
 | **Styling** | Custom CSS with dark mode, glassmorphism, micro-animations |
+| **Email** | Django `send_mass_mail`, Gmail SMTP / any SMTP, async via `threading` |
 
 ---
 
@@ -144,8 +156,14 @@ pip install langchain-huggingface langchain-core python-dotenv
 
 # 5. Create .env file
 cp .env.example .env
-# Edit .env and add your Hugging Face API token:
-# HUGGINGFACEHUB_API_TOKEN=hf_your_token_here
+# Edit .env with your credentials:
+#   HUGGINGFACEHUB_API_TOKEN=hf_your_token_here   ← required for AI Resume Analyzer
+#   EMAIL_HOST_USER=your@gmail.com                 ← required for email notifications
+#   EMAIL_HOST_PASSWORD=your-gmail-app-password    ← use a Gmail App Password, not your real password
+#
+# For local development, keep EMAIL_BACKEND=django.core.mail.backends.console.EmailBackend
+# Emails will print in the terminal instead of being sent.
+# Switch to django.core.mail.backends.smtp.EmailBackend for real sending.
 
 # 6. Run migrations
 python manage.py migrate
@@ -159,11 +177,17 @@ python manage.py runserver
 
 ### Environment Variables
 
-| Variable | Description |
-|----------|-------------|
-| `SECRET_KEY` | Django secret key |
-| `DEBUG` | Set to `True` for development |
-| `HUGGINGFACEHUB_API_TOKEN` | Your Hugging Face API token (required for AI Resume Analyzer) |
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `SECRET_KEY` | ✅ | Django secret key |
+| `DEBUG` | ✅ | Set to `True` for development |
+| `HUGGINGFACEHUB_API_TOKEN` | ✅ | Hugging Face API token (AI Resume Analyzer) |
+| `EMAIL_BACKEND` | ✅ | `console` for dev, `smtp.EmailBackend` for prod |
+| `EMAIL_HOST` | ✅ | SMTP server — default `smtp.gmail.com` |
+| `EMAIL_PORT` | ✅ | SMTP port — default `587` (TLS) |
+| `EMAIL_USE_TLS` | ✅ | Set `True` for TLS encryption |
+| `EMAIL_HOST_USER` | ✅ | Your sender Gmail address |
+| `EMAIL_HOST_PASSWORD` | ✅ | Gmail App Password (not your account password) |
 
 ---
 
@@ -176,6 +200,19 @@ python manage.py runserver
 5. **Analyze Your Resume** — Upload a PDF/DOCX and select a target role
 6. **Connect with Alumni** — Browse the directory and request mentorship
 7. **Admin Panel** — Visit `/admin/` to manage data
+
+### 📬 How Email Notifications Work
+
+Whenever an admin or alumni posts a new placement or internship opportunity:
+
+1. Django fires a `post_save` signal on the `PlacementPost` model
+2. `notify_students_new_placement` in `placements/signals.py` catches the signal (only for newly **created** and **active** posts)
+3. `send_placement_emails_async` in `placements/utils.py` spins up a **background daemon thread**
+4. Inside the thread, all student accounts with a registered email are fetched
+5. A single SMTP connection is opened and all emails are sent in one batch via `send_mass_mail`
+6. The student receives an email with the **company name**, **role**, and **application deadline**
+
+> **Gmail App Password**: Go to your Google Account → Security → 2-Step Verification → App Passwords, generate one, and paste it into `EMAIL_HOST_PASSWORD` in your `.env`.
 
 ---
 
@@ -194,8 +231,10 @@ collegeconnect/
 │   └── templates/         # Alumni-specific templates
 │
 ├── placements/            # Campus placement management
-│   ├── models.py          # PlacementPost, Application
+│   ├── models.py          # PlacementPost, Application, PlacementRecord
 │   ├── views.py           # List, detail, apply, calendar
+│   ├── signals.py         # post_save signal → triggers email on new post
+│   ├── utils.py           # send_placement_emails_async (background thread + send_mass_mail)
 │   └── templates/         # Placement-specific templates
 │
 ├── resume_analyzer/       # AI-powered resume analysis
