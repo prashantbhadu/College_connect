@@ -35,6 +35,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'crispy_forms',
     'crispy_bootstrap5',
+    'django_celery_results',
 
     # Local apps
     'accounts',
@@ -90,12 +91,12 @@ if DB_ENGINE == 'django.db.backends.sqlite3':
 else:
     DATABASES = {
         'default': {
-            'ENGINE': DB_ENGINE,
-            'NAME': DB_NAME,
-            'USER': config('DB_USER', default=''),
-            'PASSWORD': config('DB_PASSWORD', default=''),
-            'HOST': config('DB_HOST', default='localhost'),
-            'PORT': config('DB_PORT', default='5432'),
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': config('DB_NAME'),
+            'USER': config('DB_USER'),
+            'PASSWORD': config('DB_PASSWORD'),
+            'HOST': config('DB_HOST'),
+            'PORT': config('DB_PORT'),
         }
     }
 
@@ -184,3 +185,20 @@ LOGOUT_REDIRECT_URL = '/'
 # File upload limits
 FILE_UPLOAD_MAX_MEMORY_SIZE = 5 * 1024 * 1024  # 5 MB
 DATA_UPLOAD_MAX_MEMORY_SIZE = 5 * 1024 * 1024
+
+# ── Celery ────────────────────────────────────────────────────────────────────
+# Broker: Redis. Override via env var in production (e.g. Render Redis add-on).
+CELERY_BROKER_URL = config('CELERY_BROKER_URL', default='redis://localhost:6379/0')
+
+# Store task results in the Django database (django_celery_results).
+# Run: python manage.py migrate   after adding django_celery_results to INSTALLED_APPS.
+CELERY_RESULT_BACKEND = 'django-db'
+
+# Only JSON is allowed — keeps tasks safe and inspectable.
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+
+# Timezone — match Django's setting.
+CELERY_TIMEZONE = TIME_ZONE
+CELERY_ENABLE_UTC = True

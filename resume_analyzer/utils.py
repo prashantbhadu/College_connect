@@ -12,7 +12,7 @@ LLM_PROMPT = """You are an expert ATS (Applicant Tracking System) Resume Analyze
 Analyze the resume below against the given job role. Return ONLY a valid JSON object with no extra text, markdown, or explanation. The JSON must exactly follow this schema:
 
 {{
-  "ats_score": <integer 0-100>,
+  "ats_score": <integer 0-99>,
   "matched_skills": [<list of strings>],
   "missing_keywords": [<list of strings>],
   "resume_improvements": [<list of strings>],

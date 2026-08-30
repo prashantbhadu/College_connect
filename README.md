@@ -49,7 +49,7 @@ The platform brings everything under one roof — a unified dashboard for placem
 ### 📧 Email Notification System
 - **Automatic Alerts** — Every registered student receives an email the moment a new placement or internship post goes live
 - **Zero Delay** — Notifications fire instantly via a Django `post_save` signal attached to `PlacementPost`
-- **Async Delivery** — Emails are dispatched in a background daemon thread using Python's `threading` module, so the web request is never blocked
+- **Async Delivery** — Emails are dispatched asynchronously via Celery tasks backed by a Redis broker (running in Docker), ensuring web requests are never blocked and failed sends auto-retry
 - **Bulk Sending** — Uses Django's `send_mass_mail` to open a single SMTP connection and deliver all emails efficiently in one batch
 - **Smart Targeting** — Only students with a registered email address receive notifications; no spam to users with missing emails
 - **Key Details Included** — Each email contains the company name, role title, and application deadline so students have everything at a glance
@@ -88,12 +88,12 @@ The platform brings everything under one roof — a unified dashboard for placem
 | **Frontend** | Bootstrap 5.3, Bootstrap Icons, Google Fonts (Inter) |
 | **AI Engine** | DeepSeek-R1-Distill-Llama-8B via Hugging Face API |
 | **LLM Framework** | LangChain (`ChatHuggingFace`, `JsonOutputParser`, Pydantic) |
-| **Database** | SQLite (dev) / PostgreSQL (prod-ready) |
+| **Database** | SQLite (default dev) / PostgreSQL (`django.db.backends.postgresql`) |
 | **Auth** | Django built-in + JWT (SimpleJWT) for API |
 | **File Parsing** | PyPDF2 (PDF), python-docx (DOCX) |
 | **Static Files** | WhiteNoise |
 | **Styling** | Custom CSS with dark mode, glassmorphism, micro-animations |
-| **Email** | Django `send_mass_mail`, Gmail SMTP / any SMTP, async via `threading` |
+| **Email** | Django `send_mass_mail`, Celery async task queue + Redis (Docker container) |
 
 ---
 
@@ -161,6 +161,15 @@ cp .env.example .env
 #   EMAIL_HOST_USER=your@gmail.com                 ← required for email notifications
 #   EMAIL_HOST_PASSWORD=your-gmail-app-password    ← use a Gmail App Password, not your real password
 #
+# Database Setup (SQLite by default):
+#   To switch to PostgreSQL, configure in .env:
+#     DB_ENGINE=django.db.backends.postgresql
+#     DB_NAME=collegeconnect
+#     DB_USER=your_postgres_user
+#     DB_PASSWORD=your_postgres_password
+#     DB_HOST=localhost
+#     DB_PORT=5432
+#
 # For local development, keep EMAIL_BACKEND=django.core.mail.backends.console.EmailBackend
 # Emails will print in the terminal instead of being sent.
 # Switch to django.core.mail.backends.smtp.EmailBackend for real sending.
@@ -168,10 +177,16 @@ cp .env.example .env
 # 6. Run migrations
 python manage.py migrate
 
-# 7. Create a superuser
+# 7. Start Redis broker using Docker
+docker-compose up -d redis
+
+# 8. Start Celery worker in a separate terminal
+celery -A campusconnect worker --loglevel=info
+
+# 9. Create a superuser
 python manage.py createsuperuser
 
-# 8. Start the development server
+# 10. Start the development server
 python manage.py runserver
 ```
 
@@ -181,6 +196,12 @@ python manage.py runserver
 |----------|----------|-------------|
 | `SECRET_KEY` | ✅ | Django secret key |
 | `DEBUG` | ✅ | Set to `True` for development |
+| `DB_ENGINE` | ❌ | `django.db.backends.sqlite3` (default) or `django.db.backends.postgresql` |
+| `DB_NAME` | ❌ | Database name (`db.sqlite3` for SQLite, or PostgreSQL DB name) |
+| `DB_USER` | ❌ | PostgreSQL username (required when using PostgreSQL) |
+| `DB_PASSWORD` | ❌ | PostgreSQL user password (required when using PostgreSQL) |
+| `DB_HOST` | ❌ | PostgreSQL host (default `localhost`) |
+| `DB_PORT` | ❌ | PostgreSQL port (default `5432`) |
 | `HUGGINGFACEHUB_API_TOKEN` | ✅ | Hugging Face API token (AI Resume Analyzer) |
 | `EMAIL_BACKEND` | ✅ | `console` for dev, `smtp.EmailBackend` for prod |
 | `EMAIL_HOST` | ✅ | SMTP server — default `smtp.gmail.com` |
